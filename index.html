@@ -383,11 +383,19 @@
   }
 
   /* ---------- 分类（吸顶）---------- */
+  /* 两列并排：左列一摞、右列一摞，两列各自从上往下排，不交叉 */
   .cats {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 7px;
     padding: 10px 16px 4px;
+    align-items: start;
+  }
+  .cat-col {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
   }
   .cat {
     display: flex;
@@ -2303,24 +2311,39 @@ window.EXTRA = module.exports;
     (d.getMonth() + 1) + ' 月 ' + d.getDate() + ' 日 · ' + week[d.getDay()];
 
   // ---------- 分类 ----------
+  // 两列并排，各自从上往下排：
+  //   左列 = 身体那几件事（养胃/喝什么/体重）+ 常买的入口（猪肉/水果/当季菜）
+  //   右列 = 各类菜
+  // 顺序完全由 NAV_LEFT / NAV_RIGHT 两个数组决定，改顺序就改数组。
   function renderCats() {
     var box = document.getElementById('cats');
     box.innerHTML = '';
 
-    var all = EXTRA_HEAD.concat(CATS, EXTRA_TAIL, [BODY_CAT]);
+    // key → 显示名。非菜入口用 EXTRA_LABEL，菜用 CATS 里的 label，只维护一处
+    var LABEL = {};
+    Object.keys(EXTRA_LABEL).forEach(function (k) { LABEL[k] = EXTRA_LABEL[k]; });
+    CATS.forEach(function (c) { LABEL[c.key] = c.label; });
 
-    all.forEach(function (c) {
-      var el = document.createElement('button');
-      el.type = 'button';
-      var x = isExtra(c.key);
-      el.className = 'cat' + (x ? ' cat-x' : '') + (state.cat === c.key ? ' on' : '');
-      el.textContent = c.label;
-      el.onclick = function () {
-        state.cat = c.key;
-        renderCats();
-        renderList();
-      };
-      box.appendChild(el);
+    [NAV_LEFT, NAV_RIGHT].forEach(function (col) {
+      var wrap = document.createElement('div');
+      wrap.className = 'cat-col';
+
+      col.forEach(function (key) {
+        if (!LABEL[key]) return;   // 这一项数据里已经没有了，跳过
+        var x = isExtra(key);
+        var el = document.createElement('button');
+        el.type = 'button';
+        el.className = 'cat' + (x ? ' cat-x' : '') + (state.cat === key ? ' on' : '');
+        el.textContent = LABEL[key];
+        el.onclick = function () {
+          state.cat = key;
+          renderCats();
+          renderList();
+        };
+        wrap.appendChild(el);
+      });
+
+      if (wrap.children.length) box.appendChild(wrap);
     });
   }
 
@@ -2731,30 +2754,37 @@ window.EXTRA = module.exports;
     closeSheet();
   };
 
-  // ---------- 三块非菜单内容，做成分类标签，点开就在列表区显示 ----------
-  var EXTRA_HEAD = [
-    { key: 'x-fruit', label: '🍇 水果' },
-    { key: 'x-season', label: '🥬 当季菜' }
-  ];
-  // 养胃、喝什么放整条标签的后面（体重之前）：先把菜点完，再看这些
-  var EXTRA_TAIL = [
-    { key: 'x-stomach', label: '🩺 养胃' },
-    { key: 'x-tea', label: '🍵 喝什么' }
-  ];
-  var EXTRA_CATS = EXTRA_HEAD.concat(EXTRA_TAIL);
-  // 体重放整条标签的最后：它是长期目标，不是每天点菜时要看的
-  var BODY_CAT = { key: 'x-body', label: '⚖️ 体重' };
+  // ---------- 分类导航 ----------
+  // 非菜入口：这几块不是菜，是页面里的另外几块内容
+  var EXTRA_LABEL = {
+    'x-stomach': '🩺 养胃',
+    'x-tea':     '🍵 喝什么',
+    'x-body':    '⚖️ 体重',
+    'x-fruit':   '🍇 水果',
+    'x-season':  '🥬 当季菜'
+  };
+
+  // 两列各自的顺序，数组里先后 = 页面上下。改这两行就能调整布局，不用动别处
+  var NAV_LEFT = ['x-stomach', 'x-tea', 'x-body', 'pork', 'x-fruit', 'x-season'];
+  var NAV_RIGHT = ['chicken', 'fish', 'beef', 'egg', 'veg', 'soup', 'staple'];
+
+  // 数据里新加了分类、但两列都没写进去：自动补到右列末尾，不会丢
+  (function () {
+    var known = {};
+    NAV_LEFT.concat(NAV_RIGHT).forEach(function (k) { known[k] = 1; });
+    CATS.forEach(function (c) { if (!known[c.key]) NAV_RIGHT.push(c.key); });
+  })();
 
   // 没有「全部」之后，默认落在第一个有菜的普通分类上。
   // 数据里改了分类顺序、或者加了新分类，这里会自动跟着变，不用改代码。
   function defaultCat() {
-    var order = EXTRA_HEAD.concat(CATS, EXTRA_TAIL, [BODY_CAT]);
+    var order = NAV_LEFT.concat(NAV_RIGHT);
     for (var i = 0; i < order.length; i++) {
-      var k = order[i].key;
+      var k = order[i];
       if (isExtra(k)) continue;
       if (DISHES.some(function (x) { return x.cat === k; })) return k;
     }
-    return order[0].key;
+    return order[0];
   }
 
   function isExtra(key) {
