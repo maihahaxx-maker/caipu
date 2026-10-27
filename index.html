@@ -156,10 +156,10 @@
   }
 
 
-  /* ---------- 一级页：两列图卡（只放图 + 菜名）---------- */
+  /* ---------- 一级页：单列大图卡（只放图 + 菜名）---------- */
   .grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 11px;
   }
   .tile {
@@ -184,7 +184,7 @@
   .tile-fig {
     position: relative;
     width: 100%;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 4 / 3;
     background: #EDEFE9;
     display: flex;
     align-items: center;
@@ -382,37 +382,51 @@
     box-shadow: inset 0 0 0 2px #2E7D32;
   }
 
-  /* ---------- 分类（吸顶）---------- */
-  /* 两列并排：左列一摞、右列一摞，两列各自从上往下排，不交叉 */
-  .cats {
+  /* ---------- 两栏骨架：左边分类竖条，右边菜品 ---------- */
+  .shell {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 7px;
-    padding: 10px 16px 4px;
+    grid-template-columns: 88px minmax(0, 1fr);
+    column-gap: 9px;
+    padding: 0 12px 0 10px;
     align-items: start;
   }
-  .cat-col {
+  .col { min-width: 0; }
+
+  /* ---------- 分类（左侧竖条，吸顶）---------- */
+  .cats {
     display: flex;
     flex-direction: column;
-    gap: 7px;
-    min-width: 0;
+    gap: 5px;
+    padding: 8px 0 12px;
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
+    max-height: 100dvh;
+    overflow-y: auto;
+    scrollbar-width: none;
+    background: #F2F4EF;
+    -webkit-overflow-scrolling: touch;
   }
+  .cats::-webkit-scrollbar { display: none; }
   .cat {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    padding: 0 12px;
-    min-height: 38px;
+    justify-content: center;
+    padding: 0 6px;
+    min-height: 40px;
     border-radius: 9px;
     background: #fff;
     color: #4A5159;
     font-family: inherit;
-    font-size: 14.5px;
-    text-align: left;
+    font-size: 14px;
+    line-height: 1.18;
+    letter-spacing: -.2px;
+    text-align: center;
     border: 1px solid #E4E8E0;
     cursor: pointer;
     transition: background .15s, color .15s;
-    white-space: nowrap;
+    white-space: normal;
+    word-break: keep-all;
   }
   .cat:active { transform: scale(.96); }
   .cat.on {
@@ -447,8 +461,8 @@
   .legend {
     display: flex;
     align-items: center;
-    gap: 16px;
-    padding: 2px 20px 12px;
+    gap: 14px;
+    padding: 2px 0 10px;
   }
   .lg {
     display: flex;
@@ -478,7 +492,7 @@
 
   /* ---------- 列表 ---------- */
   .list {
-    padding: 0 12px;
+    padding: 0;
     padding-bottom: 130px;
   }
 
@@ -881,11 +895,15 @@
      平板/电脑上被拉成一条长带。
      ============================================================ */
 
-  /* 1. 基础：不要固定高度，横竖屏都不出横向滚动条 */
+  /* 1. 基础：不要固定高度，横竖屏都不出横向滚动条
+        注意：这里必须用 clip 不能用 hidden —— hidden 会让 body 变成滚动容器，
+        左侧分类条的 position:sticky 就失效了（会跟着页面一起滚走）。
+        老浏览器不认 clip 时退回 hidden，只是吸顶失效，别的不受影响。 */
   html, body {
     height: auto;
     min-height: 100%;
     overflow-x: hidden;
+    overflow-x: clip;
   }
 
   /* 2. 去掉双击缩放的 300ms 等待，点一下就有反应，手感跟原生一样 */
@@ -959,10 +977,11 @@
     }
     .card { grid-template-columns: 62px minmax(0, 1fr); column-gap: 10px; }
     .card { padding: 12px 11px; }
-    .cat { padding: 8px 15px; font-size: 14.5px; }
+    .cat { padding: 0 4px; font-size: 13px; min-height: 38px; }
+    .shell { grid-template-columns: 78px minmax(0, 1fr); column-gap: 7px; padding: 0 8px; }
     .bar-count { font-size: 22px; }
     .bar { left: 8px; right: 8px; }
-    .list { padding: 0 8px 140px; }
+    .list { padding: 0 0 140px; }
     /* 弹层标题在 320 屏会折成两行，改成上下排 */
     .sheet-head {
       flex-direction: column;
@@ -1003,16 +1022,20 @@
   </button>
 </header>
 
-<nav class="cats" id="cats"></nav>
+<div class="shell">
+  <nav class="cats" id="cats"></nav>
 
-<div class="legend">
-  <div class="lg"><span class="dot d1"></span>放心吃</div>
-  <div class="lg"><span class="dot d2"></span>看做法</div>
+  <div class="col">
+    <div class="legend">
+      <div class="lg"><span class="dot d1"></span>放心吃</div>
+      <div class="lg"><span class="dot d2"></span>看做法</div>
+    </div>
+
+    <main class="list" id="list">
+      <div class="loading">正在准备菜单…</div>
+    </main>
+  </div>
 </div>
-
-<main class="list" id="list">
-  <div class="loading">正在准备菜单…</div>
-</main>
 
 <div class="bar" id="bar">
   <div class="bar-num">
@@ -2311,10 +2334,8 @@ window.EXTRA = module.exports;
     (d.getMonth() + 1) + ' 月 ' + d.getDate() + ' 日 · ' + week[d.getDay()];
 
   // ---------- 分类 ----------
-  // 两列并排，各自从上往下排：
-  //   左列 = 身体那几件事（养胃/喝什么/体重）+ 常买的入口（猪肉/水果/当季菜）
-  //   右列 = 各类菜
-  // 顺序完全由 NAV_LEFT / NAV_RIGHT 两个数组决定，改顺序就改数组。
+  // 左侧竖条：一条从上排到底，顺序由 NAV_ORDER 决定
+  //   身体那几件事 → 各类菜 → 水果/当季菜
   function renderCats() {
     var box = document.getElementById('cats');
     box.innerHTML = '';
@@ -2324,26 +2345,20 @@ window.EXTRA = module.exports;
     Object.keys(EXTRA_LABEL).forEach(function (k) { LABEL[k] = EXTRA_LABEL[k]; });
     CATS.forEach(function (c) { LABEL[c.key] = c.label; });
 
-    [NAV_LEFT, NAV_RIGHT].forEach(function (col) {
-      var wrap = document.createElement('div');
-      wrap.className = 'cat-col';
-
-      col.forEach(function (key) {
-        if (!LABEL[key]) return;   // 这一项数据里已经没有了，跳过
-        var x = isExtra(key);
-        var el = document.createElement('button');
-        el.type = 'button';
-        el.className = 'cat' + (x ? ' cat-x' : '') + (state.cat === key ? ' on' : '');
-        el.textContent = LABEL[key];
-        el.onclick = function () {
-          state.cat = key;
-          renderCats();
-          renderList();
-        };
-        wrap.appendChild(el);
-      });
-
-      if (wrap.children.length) box.appendChild(wrap);
+    NAV_ORDER.forEach(function (key) {
+      if (!LABEL[key]) return;   // 这一项数据里已经没有了，跳过
+      var el = document.createElement('button');
+      el.type = 'button';
+      el.className = 'cat' + (isExtra(key) ? ' cat-x' : '') + (state.cat === key ? ' on' : '');
+      el.textContent = LABEL[key];
+      el.onclick = function () {
+        state.cat = key;
+        renderCats();
+        renderList();
+        // 换分类回到顶部，别停在上一类的半截位置
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      };
+      box.appendChild(el);
     });
   }
 
@@ -2764,27 +2779,30 @@ window.EXTRA = module.exports;
     'x-season':  '🥬 当季菜'
   };
 
-  // 两列各自的顺序，数组里先后 = 页面上下。改这两行就能调整布局，不用动别处
-  var NAV_LEFT = ['x-stomach', 'x-tea', 'x-body', 'pork', 'x-fruit', 'x-season'];
-  var NAV_RIGHT = ['chicken', 'fish', 'beef', 'egg', 'veg', 'soup', 'staple'];
+  // 左侧竖条从上到下的顺序，改这三个数组就能调整
+  var NAV_BODY  = ['x-stomach', 'x-tea', 'x-body'];                              // 身体那几件事
+  var NAV_DISH  = ['pork', 'chicken', 'fish', 'beef', 'egg', 'veg', 'soup', 'staple'];  // 各类菜
+  var NAV_EXTRA = ['x-fruit', 'x-season'];                                        // 水果、当季菜
+  var NAV_ORDER = NAV_BODY.concat(NAV_DISH, NAV_EXTRA);
 
-  // 数据里新加了分类、但两列都没写进去：自动补到右列末尾，不会丢
+  // 数据里新加了分类、但上面三个数组都没写：自动补到最后，不会丢
   (function () {
     var known = {};
-    NAV_LEFT.concat(NAV_RIGHT).forEach(function (k) { known[k] = 1; });
-    CATS.forEach(function (c) { if (!known[c.key]) NAV_RIGHT.push(c.key); });
+    NAV_ORDER.forEach(function (k) { known[k] = 1; });
+    CATS.forEach(function (c) {
+      if (!known[c.key]) { NAV_ORDER.push(c.key); known[c.key] = 1; }
+    });
   })();
 
   // 没有「全部」之后，默认落在第一个有菜的普通分类上。
   // 数据里改了分类顺序、或者加了新分类，这里会自动跟着变，不用改代码。
   function defaultCat() {
-    var order = NAV_LEFT.concat(NAV_RIGHT);
-    for (var i = 0; i < order.length; i++) {
-      var k = order[i];
+    for (var i = 0; i < NAV_ORDER.length; i++) {
+      var k = NAV_ORDER[i];
       if (isExtra(k)) continue;
       if (DISHES.some(function (x) { return x.cat === k; })) return k;
     }
-    return order[0];
+    return NAV_ORDER[0];
   }
 
   function isExtra(key) {
