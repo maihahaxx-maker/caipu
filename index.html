@@ -1,0 +1,2865 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#EAF3E6">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="今天吃点啥">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<title>今天吃点啥</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    background: #F2F4EF;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+    color: #1F2328;
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+    overscroll-behavior-y: contain;
+  }
+
+  /* ---------- 顶部 ---------- */
+  .hero {
+    padding: 26px 20px 18px;
+    background: linear-gradient(165deg, #EAF3E6 0%, #F2F4EF 100%);
+  }
+  .date {
+    font-size: 13px;
+    color: #6B7A6B;
+    letter-spacing: .4px;
+  }
+  .hero h1 {
+    margin-top: 8px;
+    font-size: 25px;
+    font-weight: 700;
+    color: #1B3A1F;
+    line-height: 1.28;
+    letter-spacing: -.2px;
+  }
+  .sub {
+    margin-top: 7px;
+    font-size: 14px;
+    color: #6B7A6B;
+  }
+  /* ---------- 不知道吃啥：一键配一桌 ---------- */
+  .pick {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    width: 100%;
+    margin-top: 14px;
+    padding: 13px 16px;
+    border: 0;
+    border-radius: 14px;
+    background: #2E7D32;
+    color: #fff;
+    font-family: inherit;
+    font-size: 16.5px;
+    font-weight: 700;
+    letter-spacing: .3px;
+    box-shadow: 0 5px 16px rgba(46, 125, 50, .26);
+    cursor: pointer;
+    transition: transform .12s, background .16s;
+  }
+  .pick:active { transform: scale(.985); background: #276B2A; }
+  .pick svg { width: 21px; height: 21px; flex: none; }
+
+  /* ---------- 配一桌的结果 ---------- */
+  .pair-note {
+    margin: 2px 0 11px;
+    padding: 11px 13px;
+    background: #F4F8F1;
+    border-radius: 11px;
+    font-size: 13.5px;
+    color: #4A5159;
+    line-height: 1.68;
+  }
+  #pairSheet .sheet-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+  }
+  .pair-row {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    column-gap: 11px;
+    align-items: center;
+    padding: 9px 10px;
+    background: #fff;
+    border: 1px solid #E6EDE2;
+    border-radius: 12px;
+    margin-bottom: 8px;
+  }
+  .pair-img {
+    width: 64px;
+    height: 64px;
+    border-radius: 9px;
+    object-fit: cover;
+    display: block;
+    background: #F1F5EE;
+  }
+  .pair-n { font-size: 16px; font-weight: 700; color: #1F2328; line-height: 1.35; }
+  .pair-n .pair-lv { font-size: 11.5px; font-weight: 600; margin-left: 6px; }
+  .pair-lv.lv1 { color: #2E7D32; }
+  .pair-lv.lv2 { color: #B07A18; }
+  .pair-meta { margin-top: 4px; font-size: 12.5px; color: #7C8A7C; }
+  .pair-tag {
+    display: inline-block;
+    margin-right: 6px;
+    padding: 1px 7px;
+    border-radius: 5px;
+    font-size: 11.5px;
+    font-weight: 600;
+    background: #EEF4EA;
+    color: #2E7D32;
+  }
+  .pair-tag.t-soup { background: #EAF1F6; color: #33607D; }
+  .pair-tag.t-veg  { background: #F0F4E4; color: #5C7024; }
+  .pair-tag.t-egg  { background: #FBF3E2; color: #8A6415; }
+
+  /* ---------- 分组标题 ---------- */
+  .group {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 20px 8px 10px;
+  }
+  .group:first-child { padding-top: 6px; }
+  .group-name {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1B3A1F;
+    letter-spacing: .3px;
+  }
+  .group-name::before {
+    content: "";
+    display: inline-block;
+    width: 3px;
+    height: 15px;
+    border-radius: 2px;
+    background: #A5C9A0;
+    margin-right: 8px;
+    vertical-align: -1px;
+  }
+  .group-count {
+    font-size: 12.5px;
+    color: #94A094;
+  }
+
+
+  /* ---------- 一级页：两列图卡（只放图 + 菜名）---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 11px;
+  }
+  .tile {
+    position: relative;
+    display: block;
+    width: 100%;
+    padding: 0;
+    border: 0;
+    background: #fff;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 1px 7px rgba(27, 58, 31, .07);
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    transition: transform .14s;
+  }
+  .tile:active { transform: scale(.977); }
+  .tile-fig {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: #EDEFE9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    line-height: 1;
+    overflow: hidden;
+  }
+  .tile-fig img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .tile-n {
+    padding: 9px 11px 11px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1B3A1F;
+    line-height: 1.34;
+  }
+  /* 图片左上角的等级色点：不占文字位，一眼看出哪道要留意 */
+  .tile-dot {
+    position: absolute;
+    left: 9px;
+    top: 9px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2.5px rgba(255, 255, 255, .85);
+  }
+  .tile-dot.d1 { background: #2E9E4F; }
+  .tile-dot.d2 { background: #E0A11B; }
+  .tile-dot.d3 { background: #C4553F; }
+  .tile-add {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 0;
+    background: rgba(255, 255, 255, .94);
+    color: #2E7D32;
+    font-size: 25px;
+    font-weight: 400;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .16);
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .16s, color .16s, transform .14s;
+  }
+  .tile-add:active { transform: scale(.9); }
+  .tile.on .tile-add {
+    background: #2E7D32;
+    color: #fff;
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .tile.on .tile-fig::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(46, 125, 50, .13);
+    pointer-events: none;
+  }
+
+  /* ---------- 二级页：详情 ---------- */
+  .dt {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    background: #F2F4EF;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    transform: translateX(100%);
+    transition: transform .27s cubic-bezier(.32, .72, 0, 1);
+    visibility: hidden;
+  }
+  .dt.on { transform: none; visibility: visible; }
+  .dt-top {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: calc(9px + env(safe-area-inset-top)) 14px 9px;
+    background: rgba(242, 244, 239, .93);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+  .dt-back {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 50%;
+    background: #fff;
+    color: #1B3A1F;
+    font-size: 21px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 1px 5px rgba(27, 58, 31, .10);
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .dt-back:active { transform: scale(.92); }
+  .dt-crumb {
+    font-size: 13.5px;
+    color: #7A857A;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .dt-fig {
+    position: relative;
+    margin: 4px 14px 0;
+    border-radius: 16px;
+    overflow: hidden;
+    aspect-ratio: 1 / 1;
+    background: #EDEFE9;
+  }
+  .dt-fig img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .dt-body { padding: 15px 16px 22px; }
+  .dt-name {
+    font-size: 23px;
+    font-weight: 700;
+    color: #1B3A1F;
+    line-height: 1.28;
+    letter-spacing: -.2px;
+  }
+  .dt-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 9px;
+    flex-wrap: wrap;
+  }
+  .dt-cat {
+    font-size: 12.5px;
+    color: #7A857A;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: #E8ECE4;
+  }
+  .dt-sec { margin-top: 19px; }
+  .dt-h {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #2E7D32;
+    letter-spacing: .1em;
+  }
+  .dt-p {
+    margin-top: 7px;
+    font-size: 15.5px;
+    line-height: 1.78;
+    color: #3D443D;
+  }
+  .dt-foot {
+    position: sticky;
+    bottom: 0;
+    padding: 14px 16px calc(16px + env(safe-area-inset-bottom));
+    background: linear-gradient(to top, #F2F4EF 62%, rgba(242, 244, 239, 0));
+  }
+  .dt-btn {
+    width: 100%;
+    padding: 15px 16px;
+    border: 0;
+    border-radius: 14px;
+    background: #2E7D32;
+    color: #fff;
+    font-family: inherit;
+    font-size: 16.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(46, 125, 50, .28);
+  }
+  .dt-btn:active { transform: scale(.985); }
+  .dt-btn.on {
+    background: #fff;
+    color: #2E7D32;
+    box-shadow: inset 0 0 0 2px #2E7D32;
+  }
+
+  /* ---------- 分类（吸顶）---------- */
+  .cats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+    padding: 10px 16px 4px;
+  }
+  .cat {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 0 12px;
+    min-height: 38px;
+    border-radius: 9px;
+    background: #fff;
+    color: #4A5159;
+    font-family: inherit;
+    font-size: 14.5px;
+    text-align: left;
+    border: 1px solid #E4E8E0;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    white-space: nowrap;
+  }
+  .cat:active { transform: scale(.96); }
+  .cat.on {
+    background: #2E7D32;
+    color: #fff;
+    border-color: #2E7D32;
+    font-weight: 600;
+  }
+  /* 非菜品的三个标签：暖色，一眼区分开 */
+  .cat.cat-x {
+    background: #FFF9F0;
+    border-color: #F0DEBE;
+    color: #A2660A;
+  }
+  .cat.cat-x.on {
+    background: #C98A1E;
+    border-color: #C98A1E;
+    color: #fff;
+  }
+  .x-lead {
+    margin: 2px 4px 14px;
+    padding: 14px 15px;
+    background: #FFF9F0;
+    border: 1px solid #F2E4CB;
+    border-radius: 14px;
+    font-size: 15px;
+    line-height: 1.7;
+    color: #7A5410;
+  }
+
+  /* ---------- 图例 ---------- */
+  .legend {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 2px 20px 12px;
+  }
+  .lg {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: #6B7A6B;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .d1 { background: #43A047; }
+  .d2 { background: #EFB23E; }
+
+  .legend-btn {
+    margin-left: auto;
+    flex: none;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid #D8E0D2;
+    background: #fff;
+    color: #2E7D32;
+    font-size: 12.5px;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .legend-btn:active { background: #F1F6EE; }
+
+  /* ---------- 列表 ---------- */
+  .list {
+    padding: 0 12px;
+    padding-bottom: 130px;
+  }
+
+  .card {
+    display: grid;
+    grid-template-columns: 108px minmax(0, 1fr);
+    column-gap: 12px;
+    align-items: start;
+    background: #fff;
+    border-radius: 15px;
+    padding: 14px 13px;
+    margin-bottom: 10px;
+    border: 1.5px solid transparent;
+    box-shadow: 0 1px 6px rgba(27, 58, 31, .05);
+    cursor: pointer;
+    transition: border-color .16s, background .16s, box-shadow .16s;
+    position: relative;
+  }
+  .card.on {
+    border-color: #2E7D32;
+    background: #F7FBF4;
+    box-shadow: 0 2px 12px rgba(46, 125, 50, .15);
+  }
+
+  .thumb {
+    flex: none;
+    grid-column: 1;
+    grid-row: 1;
+    align-self: stretch;
+    width: 108px;
+    min-height: 108px;
+    height: auto;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    font-size: 32px;
+    line-height: 1;
+    position: relative;
+  }
+  .thumb img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .t1 { background: #E8F5E9; }
+  .t2 { background: #FFF6E0; }
+
+  .body { grid-column: 2; grid-row: 1; min-width: 0; padding-right: 34px; }
+
+  .row1 {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 5px;
+  }
+  .name {
+    font-size: 19px;
+    font-weight: 700;
+    color: #1F2328;
+    line-height: 1.3;
+  }
+  .badge {
+    padding: 2px 8px;
+    border-radius: 5px;
+    font-size: 11.5px;
+    line-height: 1.6;
+    flex: none;
+  }
+  .b1 { background: #E8F5E9; color: #2E7D32; }
+  .b2 { background: #FFF6E0; color: #A96A00; }
+
+  .why {
+    font-size: 15px;
+    color: #4A5159;
+    line-height: 1.62;
+  }
+  .tip {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: 9px;
+    font-size: 13.5px;
+    color: #7C8A7C;
+    line-height: 1.6;
+  }
+  .tip::before { content: "做法："; }
+
+  .tick {
+    position: absolute;
+    right: 13px;
+    top: 16px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #F1F3EE;
+    color: #9AA69A;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .16s, color .16s;
+  }
+  .tick.on { background: #2E7D32; color: #fff; }
+
+  /* ---------- 底部条 ---------- */
+  .bar {
+    position: fixed;
+    left: 12px;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border-radius: 15px;
+    padding: 10px 10px 10px 16px;
+    box-shadow: 0 8px 30px rgba(27, 58, 31, .18);
+    transform: translateY(150%);
+    opacity: 0;
+    transition: transform .28s cubic-bezier(.2, .8, .3, 1), opacity .2s;
+    z-index: 50;
+  }
+  .bar.on { transform: translateY(0); opacity: 1; }
+  .bar-num { display: flex; align-items: baseline; margin-right: 13px; }
+  .bar-count { font-size: 24px; font-weight: 700; color: #2E7D32; line-height: 1; }
+  .bar-unit { font-size: 13.5px; color: #6B7A6B; margin-left: 3px; }
+  .bar-btn {
+    flex: 1;
+    height: 48px;
+    border-radius: 11px;
+    background: #2E7D32;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+  }
+  .bar-btn:active { background: #256428; }
+
+  /* ---------- 面板 ---------- */
+  .mask {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 30, 20, .45);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .22s;
+    z-index: 60;
+  }
+  .mask.on { opacity: 1; visibility: visible; }
+
+  .sheet {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-height: 86vh;
+    max-height: 86dvh;
+    background: #fff;
+    border-radius: 20px 20px 0 0;
+    transform: translateY(102%);
+    transition: transform .3s cubic-bezier(.2, .8, .3, 1);
+    z-index: 70;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .sheet.on { transform: translateY(0); }
+  .bar-handle {
+    width: 38px;
+    height: 4px;
+    border-radius: 999px;
+    background: #DFE4DA;
+    margin: 9px auto 3px;
+    flex: none;
+  }
+  .sheet-head {
+    padding: 9px 20px 10px;
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+    flex: none;
+  }
+  .sheet-title { font-size: 21px; font-weight: 700; color: #1F2328; }
+  .sheet-sub { font-size: 13.5px; color: #7C8A7C; }
+  .sheet-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 16px 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .sheet-body::-webkit-scrollbar { display: none; }
+
+  .adv {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px;
+    border-radius: 11px;
+    margin-bottom: 8px;
+  }
+  .aok { background: #F1F8EE; }
+  .awarn { background: #FFF8E6; }
+  .abad { background: #FDF0EE; }
+  .adv-icon {
+    flex: none;
+    width: 21px;
+    height: 21px;
+    border-radius: 50%;
+    font-size: 12.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 9px;
+    color: #fff;
+    font-weight: 700;
+  }
+  .aok .adv-icon { background: #43A047; }
+  .awarn .adv-icon { background: #EFB23E; }
+  .abad .adv-icon { background: #E2584A; }
+  .adv-text { flex: 1; font-size: 14.5px; color: #33383D; line-height: 1.62; }
+
+  .tips {
+    margin: 8px 0 14px;
+    padding: 14px;
+    background: #F7F8F5;
+    border-radius: 11px;
+  }
+  .tips-title {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6B7A6B;
+    margin-bottom: 9px;
+  }
+  .tips-row {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 6px;
+    font-size: 13.5px;
+    color: #555E55;
+    line-height: 1.58;
+  }
+  .tips-row:last-child { margin-bottom: 0; }
+  .tips-dot {
+    flex: none;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #B9C4B6;
+    margin: 8px 8px 0 0;
+  }
+
+  .sheet-foot {
+    display: flex;
+    gap: 10px;
+    padding: 10px 16px 18px;
+    flex: none;
+  }
+  .btn {
+    height: 50px;
+    border-radius: 11px;
+    font-size: 16px;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-ghost {
+    flex: 1;
+    border: 1px solid #DFE4DA;
+    background: #fff;
+    color: #6B7A6B;
+    font-size: 15px;
+  }
+  .btn-main {
+    flex: 1.7;
+    background: #2E7D32;
+    color: #fff;
+    font-weight: 600;
+  }
+  .btn-main:active { background: #256428; }
+
+  /* ---------- 建议页 ---------- */
+  .sec {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 22px 2px 11px;
+  }
+  .sec:first-child { padding-top: 4px; }
+  .sec-t {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1B3A1F;
+  }
+  .sec-t::before {
+    content: "";
+    display: inline-block;
+    width: 3px;
+    height: 15px;
+    border-radius: 2px;
+    background: #A5C9A0;
+    margin-right: 8px;
+    vertical-align: -1px;
+  }
+  .sec-s { font-size: 12.5px; color: #94A094; }
+
+  .body-card {
+    background: #F5F8F2;
+    border-radius: 13px;
+    padding: 14px 15px;
+    margin-bottom: 11px;
+  }
+  .bc-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 9px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .bc-row:last-child { margin-bottom: 0; }
+  .bc-k { flex: none; width: 46px; color: #7C8A7C; }
+  .bc-v { flex: 1; color: #1F2328; }
+  .bc-v .hot { color: #C0392B; font-weight: 600; }
+
+  .ei {
+    padding: 12px 14px;
+    border-radius: 12px;
+    margin-bottom: 9px;
+    background: #fff;
+    border: 1px solid #EDF0E8;
+    border-left-width: 3px;
+  }
+  .ei:last-child { margin-bottom: 0; }
+  .ei-n {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1F2328;
+    line-height: 1.4;
+    margin-bottom: 5px;
+  }
+  .ei-t { font-size: 14px; color: #4A5159; line-height: 1.66; }
+
+  /* 带图的条目（水果 / 当季菜）：左图右文，垂直居中，图有多高卡片就多高，不留空 */
+  .ei.has-img {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    padding: 10px 13px 10px 10px;
+  }
+  .ei.has-img .ei-bd { flex: 1; min-width: 0; }
+  .ei.has-img .ei-n { margin-bottom: 3px; }
+  .ei-fig {
+    flex: none;
+    width: 72px;
+    height: 72px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #EFE7DA;
+    position: relative;
+  }
+  .ei-fig img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .ei-ok { border-left-color: #43A047; }
+  .ei-warn { border-left-color: #EFB23E; }
+  .ei-bad { border-left-color: #E2584A; background: #FFFCFA; }
+  .ei-plain { border-left-color: #C9D3C6; }
+  .ei-ok .ei-n { color: #2E7D32; }
+  .ei-warn .ei-n { color: #A96A00; }
+  .ei-bad .ei-n { color: #C0392B; }
+
+  .loading {
+    padding: 60px 24px;
+    text-align: center;
+    color: #8A958A;
+    font-size: 15px;
+    line-height: 1.8;
+  }
+
+  /* ============================================================
+     手机适配
+     手机型号屏幕尺寸差别很大（320 的老安卓到 430 的大屏），
+     这里处理四件事：刘海挡住内容、手指点不中、小屏挤断行、
+     平板/电脑上被拉成一条长带。
+     ============================================================ */
+
+  /* 1. 基础：不要固定高度，横竖屏都不出横向滚动条 */
+  html, body {
+    height: auto;
+    min-height: 100%;
+    overflow-x: hidden;
+  }
+
+  /* 2. 去掉双击缩放的 300ms 等待，点一下就有反应，手感跟原生一样 */
+  * { touch-action: manipulation; }
+
+  button {
+    font-family: inherit;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* 3. 刘海屏 / 状态栏：内容不能钻到听筒下面去 */
+  .hero {
+    padding-top: calc(26px + env(safe-area-inset-top));
+  }
+
+  /* 4. 底部条抬高一点：iOS Safari 底部工具栏会盖住 12px 那一档 */
+  .bar { bottom: calc(16px + env(safe-area-inset-bottom)); }
+  .list { padding-bottom: 140px; }
+
+  /* 5. 点按不要选中文字、不要弹出"拷贝/查词典"菜单 */
+  .card, .cat, .btn, .bar-btn, .tick, .thumb {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  /* 6. 手指点得中：标签至少 42px 高（手指接触面约 9mm） */
+  .tick { min-width: 32px; min-height: 32px; }
+
+  /* 7. 宽屏（平板、电脑预览）：居中成一条手机宽度，别拉成一条长带 */
+  @media (min-width: 620px) {
+    body {
+      max-width: 560px;
+      margin: 0 auto;
+      background: #F2F4EF;
+      box-shadow: 0 0 0 1px #E4E8E0, 0 0 44px rgba(27, 58, 31, .07);
+    }
+    .bar {
+      left: 50%;
+      right: auto;
+      width: 536px;
+      transform: translate(-50%, 150%);
+    }
+    .bar.on { transform: translate(-50%, 0); }
+    .sheet {
+      left: 50%;
+      right: auto;
+      width: 560px;
+      transform: translate(-50%, 102%);
+    }
+    .sheet.on { transform: translate(-50%, 0); }
+    .mask {
+      left: 50%;
+      right: auto;
+      width: 560px;
+      transform: translateX(-50%);
+    }
+  }
+
+  /* 8. 小屏（320–360，老安卓和 iPhone SE）：压留白、缩字号，别让字挤成两行 */
+  @media (max-width: 344px) {
+    .hero { padding-left: 16px; padding-right: 16px; }
+    .name { font-size: 17.5px; }
+    .why { font-size: 14px; }
+    .tip { font-size: 13px; }
+    .thumb {
+      width: 62px;
+      min-height: 62px;
+      font-size: 25px;
+    }
+    .card { grid-template-columns: 62px minmax(0, 1fr); column-gap: 10px; }
+    .card { padding: 12px 11px; }
+    .cat { padding: 8px 15px; font-size: 14.5px; }
+    .bar-count { font-size: 22px; }
+    .bar { left: 8px; right: 8px; }
+    .list { padding: 0 8px 140px; }
+    /* 弹层标题在 320 屏会折成两行，改成上下排 */
+    .sheet-head {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 3px;
+      padding: 9px 16px 8px;
+    }
+    .sheet-title { font-size: 18.5px; line-height: 1.35; }
+    .sheet-sub { font-size: 12.5px; }
+    .sheet-body { padding: 0 12px 6px; }
+    .adv { padding: 10px 11px; }
+    .adv-text { font-size: 14px; }
+    .btn { font-size: 15.5px; padding: 13px 8px; }
+    .sheet-foot { padding: 10px 12px 16px; }
+  }
+
+  /* 9. 横屏（手机横过来）：弹层不超过屏幕，别把标题挤没 */
+  @media (max-height: 430px) and (orientation: landscape) {
+    .sheet { max-height: 94vh; max-height: 94dvh; }
+    .hero { padding-top: calc(14px + env(safe-area-inset-top)); padding-bottom: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="date" id="today"></div>
+  <h1>今天想吃什么？</h1>
+  <p class="sub">点开看图，右下角 ＋ 加进这顿</p>
+  <button class="pick" id="pickBtn" type="button">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <rect x="3.6" y="3.6" width="16.8" height="16.8" rx="4.2" stroke="currentColor" stroke-width="1.7"/>
+      <circle cx="8.4" cy="8.4" r="1.45" fill="currentColor"/>
+      <circle cx="15.6" cy="15.6" r="1.45" fill="currentColor"/>
+      <circle cx="12" cy="12" r="1.45" fill="currentColor"/>
+    </svg>
+    <span>不知道吃啥？帮我配一桌</span>
+  </button>
+</header>
+
+<nav class="cats" id="cats"></nav>
+
+<div class="legend">
+  <div class="lg"><span class="dot d1"></span>放心吃</div>
+  <div class="lg"><span class="dot d2"></span>看做法</div>
+</div>
+
+<main class="list" id="list">
+  <div class="loading">正在准备菜单…</div>
+</main>
+
+<div class="bar" id="bar">
+  <div class="bar-num">
+    <span class="bar-count" id="count">0</span>
+    <span class="bar-unit">道</span>
+  </div>
+  <button class="bar-btn" id="openBtn" type="button">看看这顿配得怎么样</button>
+</div>
+
+
+<div class="dt" id="dt">
+  <div class="dt-top">
+    <button class="dt-back" id="dtBack" type="button" aria-label="返回">‹</button>
+    <span class="dt-crumb" id="dtCrumb"></span>
+  </div>
+  <div class="dt-fig" id="dtFig"></div>
+  <div class="dt-body">
+    <div class="dt-name" id="dtName"></div>
+    <div class="dt-meta" id="dtMeta"></div>
+    <div class="dt-sec">
+      <div class="dt-h">为什么</div>
+      <div class="dt-p" id="dtWhy"></div>
+    </div>
+    <div class="dt-sec">
+      <div class="dt-h">做法</div>
+      <div class="dt-p" id="dtTip"></div>
+    </div>
+  </div>
+  <div class="dt-foot">
+    <button class="dt-btn" id="dtAdd" type="button">加入这顿</button>
+  </div>
+</div>
+
+<div class="mask" id="mask"></div>
+
+<!-- 一键配一桌 -->
+<section class="sheet" id="pairSheet">
+  <div class="bar-handle"></div>
+  <div class="sheet-head">
+    <span class="sheet-title">这桌给你配好了</span>
+    <span class="sheet-sub" id="pairSub"></span>
+  </div>
+  <div class="sheet-body" id="pairBody"></div>
+  <div class="sheet-foot">
+    <button class="btn btn-ghost" id="pairAgain" type="button">换一桌</button>
+    <button class="btn btn-main" id="pairTake" type="button">就吃这些</button>
+  </div>
+</section>
+
+<section class="sheet" id="sheet">
+  <div class="bar-handle"></div>
+  <div class="sheet-head">
+    <span class="sheet-title" id="headline"></span>
+    <span class="sheet-sub" id="subline"></span>
+  </div>
+  <div class="sheet-body" id="advice"></div>
+  <div class="sheet-foot">
+    <button class="btn btn-ghost" id="clearBtn" type="button">全部重选</button>
+    <button class="btn btn-main" id="closeBtn" type="button">就吃这些</button>
+  </div>
+</section>
+
+<script>
+/* ===== data/dishes.js ===== */
+var module = { exports: {} };
+// ============================================================
+// 菜品数据（v4 · 按食材分组）
+// 约束：高血压（低钠）+ 高血脂（低饱和脂肪）+ 尿酸高（低嘌呤）
+//
+// 设计原则：
+//   1. 只放"建议吃"的菜，不放需要判断"能不能吃"的菜
+//   2. 按家里常买的食材分组（猪肉、鸡、鱼、蛋豆、蔬菜…）
+//      同一食材展开多种搭配，让人看到"能吃的其实很多"
+//   3. 肉类统一限量（每天 50–75 克生重，约一个鸡蛋大小），
+//      差别在"做法"，不在"能不能吃"
+//
+// level: 1 = 放心吃（可常吃）
+//        2 = 看做法（菜没问题，做法上有讲究）
+// cat:   对应 CATS 里的 key
+// role:  分类的角色，搭配算法只认 role，不认 cat 名。
+//        meat 荤菜 | egg 蛋豆 | veg 蔬菜 | soup 汤 | staple 主食
+//        —— 以后新增分类（比如「豆制品」「 seafood」），给它一个现有的 role 就能自动进搭配池；
+//        没写 role 的分类只会在分类条里出现，不参与「随便配一桌」
+// ings:  这道菜用的**配菜/主料**（蔬菜、菌菇、豆制品、蛋），用来做同桌去重，
+//        避免一桌上出现两道冬瓜 / 两道木耳。肉本身不用写（肉类的重复由 role + cat 控制）。
+//        —— 新增菜品时把配菜填进来，这一桌就不会重样；留空就不参与去重
+//
+// 【怎么加一道新菜】在 DISHES 里追加一条，字段照抄下面的：
+//   { id: <唯一英文id>, ings: ['配菜'], name: <菜名>, cat: <分类key>,
+//     level: 1 或 2, emoji: '兜底图标', why: '为什么适合吃', tip: '做法', flags: {} }
+//   加完还要在 images/ 里放一张同名图片（{id}.webp），没放会自动退回 emoji
+//
+// 【怎么加一个新分类】在 CATS 里加一行 { key, label, role }，
+//   role 沿用 meat/egg/veg/soup/staple 之一即可；再给菜品的 cat 填这个 key
+// ============================================================
+
+const CATS = [
+  
+  { key: 'pork', label: '猪肉', role: 'meat' },
+  { key: 'chicken', label: '鸡', role: 'meat' },
+  { key: 'fish', label: '鱼', role: 'meat' },
+  { key: 'beef', label: '牛肉', role: 'meat' },
+  { key: 'egg', label: '蛋豆', role: 'egg' },
+  { key: 'veg', label: '蔬菜', role: 'veg' },
+  { key: 'soup', label: '汤', role: 'soup' },
+  { key: 'staple', label: '主食', role: 'staple' }
+]
+
+const LEVELS = {
+  1: { text: '放心吃' },
+  2: { text: '看做法' }
+}
+
+const DISHES = [
+  // ============================================================
+  // 猪肉 —— 全部用瘦肉（里脊、后腿、赤肉），不用排骨
+  // 排骨每 100 克脂肪 25–33 克，是猪里脊的近 4 倍，
+  // 且近一半是饱和脂肪，看着瘦是假象
+  // ============================================================
+  {
+    id: 'pork-celery',
+    ings: ['芹菜'],
+    name: '芹菜炒瘦肉',
+    cat: 'pork',
+    level: 1,
+    emoji: '🥬',
+    why: '芹菜钾高，能帮着把钠排出去，对血压是实打实的好。瘦肉选里脊，脂肪不到 8%。',
+    tip: '里脊逆纹切薄片，少许生粉抓一下就很嫩，不用嫩肉粉。芹菜撕掉老筋、斜切细丝，焯 30 秒再炒——切细、炒软，胃才不受罪。',
+    flags: { protein: true, greenVeg: true, stomach: true }
+  },
+  {
+    id: 'pork-bitter',
+    ings: ['苦瓜'],
+    name: '苦瓜炒肉片',
+    cat: 'pork',
+    level: 1,
+    emoji: '🥒',
+    why: '苦瓜嘌呤极低，苦味物质还能帮着开胃。但苦瓜性寒，胃炎发作、胃胀的时候别吃。',
+    tip: '苦瓜切薄片用盐抓 5 分钟再冲掉，苦味减一半——但这一步会带进盐，后面就别再放盐了。炒到软一点，别追求脆。',
+    flags: { protein: true, stomach: true }
+  },
+  {
+    id: 'pork-cucumber',
+    ings: ['黄瓜'],
+    name: '青瓜炒肉片',
+    cat: 'pork',
+    level: 1,
+    emoji: '🥒',
+    why: '青瓜水分足、嘌呤极低，能顺带帮着多喝水——尿酸主要靠尿排出去。',
+    tip: '青瓜最后下，炒 1 分钟就够，久了出水变软。一勺油即可。',
+    flags: { protein: true }
+  },
+  {
+    id: 'pork-loofah',
+    ings: ['丝瓜'],
+    name: '丝瓜炒肉片',
+    cat: 'pork',
+    level: 1,
+    emoji: '🥒',
+    why: '丝瓜嘌呤极低，夏天清口不油腻，配瘦肉刚好补上蛋白。',
+    tip: '丝瓜去皮切滚刀块，别提前切好放着会发黑；蒜蓉先爆香，油一勺。',
+    flags: { protein: true }
+  },
+  {
+    id: 'pork-fungus',
+    ings: ['木耳'],
+    name: '木耳炒肉片',
+    cat: 'pork',
+    level: 1,
+    emoji: '🍄',
+    why: '木耳的纤维能带走一部分胆固醇，是这三样里对血脂最有用的一种配菜，嘌呤还特别低。',
+    tip: '木耳泡发别超过 2 小时（泡太久会变质）；干木耳比鲜木耳安全。',
+    flags: { protein: true }
+  },
+  {
+    id: 'pork-beans',
+    ings: ['豆角'],
+    name: '豆角炒肉丝',
+    cat: 'pork',
+    level: 2,
+    emoji: '🫛',
+    why: '豆角纤维好、嘌呤低，配瘦肉是标准家常搭配。唯一要小心的是它必须彻底炒熟。',
+    tip: '生豆角含皂苷，没炒透会中毒（恶心呕吐）。先焯水 3 分钟再炒，颜色变深绿、没有生豆味才出锅。',
+    flags: { protein: true }
+  },
+  {
+    id: 'pork-yam',
+    ings: ['山药'],
+    name: '山药炒肉片',
+    cat: 'pork',
+    level: 1,
+    emoji: '🥔',
+    why: '山药是这几样里最养胃的——黏黏的那层蛋白能在胃黏膜上铺一层，反酸、胃痛的时候吃着舒服。切薄片炒到软，牙口也没问题。',
+    tip: '买铁棍山药，去皮时戴手套（黏液会让手痒）。切斜片，配瘦肉片炒 3 分钟，加小半碗水焖 1 分钟让它软透。',
+    flags: { protein: true }
+  },
+  {
+    id: 'pork-patty',
+    ings: [],
+    name: '蒸瘦肉饼',
+    cat: 'pork',
+    level: 2,
+    emoji: '🥩',
+    why: '广东家常菜，问题全在"半肥瘦"——传统肉饼一半是肥肉。改成全瘦肉，蒸出来反而清爽。',
+    tip: '买里脊或后腿肉自己剁，加蛋清和一点生粉就嫩。别买现成的免治肉，那种掺了肥肉。',
+    flags: { protein: true }
+  },
+  {
+    id: 'pork-eggsteam',
+    ings: ['鸡蛋'],
+    name: '肉末蒸水蛋',
+    cat: 'pork',
+    level: 2,
+    emoji: '🥚',
+    why: '一碗里有蛋有肉，蛋白质够了，还几乎不用油。一个人吃饭时做最省事。',
+    tip: '肉末先用一点点生抽拌开铺底，蛋液过筛倒上去，蒸 10 分钟。生抽只放半勺。',
+    flags: { protein: true }
+  },
+  {
+    id: 'pork-wintermelon',
+    ings: ['冬瓜'],
+    name: '冬瓜焖瘦肉',
+    cat: 'pork',
+    level: 1,
+    emoji: '🍈',
+    why: '冬瓜利尿、嘌呤极低，是尿酸高的人最该常吃的一样。焖到软烂，牙口不好也吃得下。',
+    tip: '冬瓜切厚片，加小半碗水焖 8 分钟，靠冬瓜本身的甜味，盐一小撮就够。',
+    flags: { protein: true }
+  },
+  {
+    id: 'pork-velvet',
+    ings: ['鹿茸菇'],
+    name: '鹿茸菇炒肉片',
+    cat: 'pork',
+    level: 2,
+    emoji: '🍄',
+    why: '鹿茸菇口感脆、鲜味重，有它在就能少放一半盐——减钠最省力的办法。菌菇鲜品嘌呤中等，适量吃没问题。但菌菇容易胀气，胃胀那几天先别吃。',
+    tip: '能用鲜菇就用鲜的。干货的话泡发后焯水 1 分钟再炒，一次抓一小把就够——干菇脱水后嘌呤浓度是鲜菇的好几倍。切小块、炒到软，比大块脆的好消化。',
+    flags: { protein: true, stomach: true }
+  },
+
+  // ============================================================
+  // 鸡 —— 一律去皮。鸡皮脂肪占整鸡脂肪的大半
+  // ============================================================
+  {
+    id: 'chicken-mushroom',
+    ings: ['鲜菇'],
+    name: '鲜菇蒸鸡（去皮）',
+    cat: 'chicken',
+    level: 1,
+    emoji: '🍗',
+    why: '鸡去皮后脂肪降一半以上，蒸的过程完全不用油。要用鲜香菇，别用干香菇。',
+    tip: '一定去皮；鲜香菇切片铺底，蒸出来的汁拌饭，不用再放盐。',
+    flags: { protein: true }
+  },
+  {
+    id: 'chicken-fungus',
+    ings: ['木耳'],
+    name: '木耳炒鸡片',
+    cat: 'chicken',
+    level: 1,
+    emoji: '🍄',
+    why: '木耳嘌呤很低，纤维帮着带走胆固醇，配去皮鸡肉，一勺油就够。',
+    tip: '鸡腿去皮切片，生粉抓一下；木耳泡发不超过 2 小时。',
+    flags: { protein: true }
+  },
+  {
+    id: 'chicken-sha-jiang',
+    ings: [],
+    name: '沙姜蒸鸡（去皮）',
+    cat: 'chicken',
+    level: 1,
+    emoji: '🍗',
+    why: '沙姜是纯香辛料，钠接近零，香味比盐焗粉更干净——盐焗粉拆开就是盐加味精。',
+    tip: '沙姜粉抹匀腌 20 分钟，加两片姜蒸 18 分钟。整道菜不用放盐，靠沙姜和鸡本身的味。',
+    flags: { protein: true }
+  },
+  {
+    id: 'chicken-ginger',
+    ings: [],
+    name: '姜葱蒸鸡（去皮）',
+    cat: 'chicken',
+    level: 1,
+    emoji: '🍗',
+    why: '和白切鸡是同一个思路，但用蒸代替浸，姜葱味一样足，还不用熬那一碗油。',
+    tip: '姜蓉葱丝铺在鸡上蒸，出锅淋半勺热油（不是一碗）；蘸着吃，别浇。',
+    flags: { protein: true }
+  },
+  {
+    id: 'chicken-poached',
+    ings: [],
+    name: '白切鸡',
+    cat: 'chicken',
+    level: 2,
+    emoji: '🍗',
+    why: '鸡肉本身很瘦，但姜葱蘸料基本是一碗油——吃鸡等于半只鸡半碗油。',
+    tip: '蘸料改姜蓉 + 两勺鸡汤 + 几滴香油，别浇热油。也别用盐焗粉，那东西基本就是盐加味精。',
+    flags: { protein: true }
+  },
+  {
+    id: 'chicken-matsutake',
+    ings: ['松茸'],
+    name: '鸡松茸炒鸡片',
+    cat: 'chicken',
+    level: 2,
+    emoji: '🍄',
+    why: '鸡松茸香气很足，两种鲜味叠在一起，盐可以少放一大半。用去皮鸡腿肉，油也就一勺。',
+    tip: '干货先泡发再焯水 1 分钟；鲜货撕细条下锅。别加鸡精——本身就够鲜了，加了只是多钠。菌菇易胀气，一次一小把。',
+    flags: { protein: true, stomach: true }
+  },
+
+  // ============================================================
+  // 鱼 —— 一周两到三次，清蒸或水汆为主
+  // ============================================================
+  {
+    id: 'fish-bass',
+    ings: [],
+    name: '清蒸鲈鱼',
+    cat: 'fish',
+    level: 1,
+    emoji: '🐟',
+    why: '鲈鱼在鱼里嘌呤偏低，鱼油对血脂有好处，清蒸又几乎不用油。三个条件都过。',
+    tip: '蒸鱼豉油只放平时一半，靠姜丝葱丝提味；蒸完盘底的汤汁倒掉，嘌呤都在里面。',
+    flags: { protein: true }
+  },
+  {
+    id: 'fish-grasscarp',
+    ings: [],
+    name: '清蒸皖鱼',
+    cat: 'fish',
+    level: 1,
+    emoji: '🐟',
+    why: '家门口最常买的鱼，蛋白质密度高，做清淡一点就是好菜。',
+    tip: '别做成红烧或酸菜鱼——油和盐都在做法里。蒸完的汤汁倒掉。',
+    flags: { protein: true }
+  },
+  {
+    id: 'fish-wintermelon',
+    ings: ['冬瓜'],
+    name: '冬瓜蒸鱼片',
+    cat: 'fish',
+    level: 1,
+    emoji: '🐟',
+    why: '冬瓜垫底蒸鱼片，两种嘌呤都极低，而且完全不酸、不油，是反流和胃炎期间最稳的鱼做法。冬瓜还利尿，帮着排尿酸。',
+    tip: '冬瓜切薄片垫盘底，鱼片铺上面，姜丝几根，水开蒸 6 分钟。出锅淋一小勺蒸鱼豉油在盘边，别浇在鱼上。',
+    flags: { protein: true }
+  },
+  {
+    id: 'fish-poached',
+    ings: [],
+    name: '白灼鱼片',
+    cat: 'fish',
+    level: 1,
+    emoji: '🐟',
+    why: '清水加姜片汆熟，一点油都不用，蘸豉油吃。嘌呤不会像煲汤那样跑到汤里。',
+    tip: '水开下鱼片，30 秒捞出；豉油倒在小碟里蘸，别浇。汆鱼的水直接倒掉别喝。',
+    flags: { protein: true }
+  },
+
+  // ============================================================
+  // 牛肉 —— 嘌呤 130 左右，比鸡肉（142）还略低
+  // 但红肉的饱和脂肪部位差异大，所以限部位、限量
+  // ============================================================
+  {
+    id: 'beef-celery',
+    ings: ['芹菜'],
+    name: '芹菜炒牛腱',
+    cat: 'beef',
+    level: 2,
+    emoji: '🥩',
+    why: '瘦牛肉的铁和锌比猪肉高，牛腱几乎是纯瘦。嘌呤和鸡肉差不多，关键在量和部位。',
+    tip: '只买牛腱或牛里脊，别买雪花牛肉（那层花纹就是脂肪）。一次一小把，约 50 克，一周一到两次。芹菜切细丝焯软，别生脆。',
+    flags: { protein: true, greenVeg: true, stomach: true }
+  },
+  {
+    id: 'beef-radish',
+    ings: ['白萝卜'],
+    name: '白萝卜焖牛腱',
+    cat: 'beef',
+    level: 2,
+    emoji: '🍲',
+    why: '牛腱几乎纯瘦，白萝卜焖到透明最养胃、也不产气，比配苦瓜温和得多。萝卜吸了肉味，肉量少也够香。',
+    tip: '牛腱切小块焯水，和白萝卜一起小火焖 40 分钟。萝卜要多、肉要少（肉 50 克就够），靠萝卜撑量。别放八角桂皮，那类香料刺激胃。',
+    flags: { protein: true }
+  },
+
+  // ============================================================
+  // 蛋豆 —— 嘌呤几乎为零，是最安全的蛋白质来源
+  // ============================================================
+  {
+    id: 'egg-steam',
+    ings: ['鸡蛋'],
+    name: '蒸水蛋',
+    cat: 'egg',
+    level: 1,
+    emoji: '🥚',
+    why: '蛋的嘌呤几乎为零，是这三样里最安全的蛋白质来源，还几乎不用油。每天都该有一个。',
+    tip: '蛋液 : 温水 = 1 : 1.5，过筛后盖保鲜膜蒸 10 分钟，出锅几滴生抽就够。',
+    flags: { protein: true }
+  },
+  {
+    id: 'egg-bitter',
+    ings: ['苦瓜'],
+    name: '苦瓜炒蛋',
+    cat: 'egg',
+    level: 1,
+    emoji: '🍳',
+    why: '两种嘌呤都极低的食材凑一起，是菜单里最安全的一道荤菜。但苦瓜性寒，胃不舒服那几天换成蒸水蛋。',
+    tip: '苦瓜先焯水去掉一部分苦味，焯到软。蛋液里别放盐，生抽最后点几滴就够。',
+    flags: { protein: true, stomach: true }
+  },
+  {
+    id: 'egg-tomato',
+    ings: ['番茄'],
+    name: '番茄炒蛋',
+    cat: 'egg',
+    level: 2,
+    emoji: '🍅',
+    why: '蛋和番茄都是好东西，坏在做法——普遍放 3 勺油加 1 勺糖，一道菜能吃掉大半天的油糖额度。另外番茄偏酸，反酸的时候这道先停。',
+    tip: '先少油炒蛋盛出，再炒番茄出汁，全程不放糖。番茄一定要炒透（皮裂开出汁），没熟透的更酸、更刺激胃。反酸发作那几天改做蒸水蛋。',
+    flags: { protein: true, stomach: true }
+  },
+  {
+    id: 'tofu-stuff',
+    ings: ['豆腐', '猪肉'],
+    name: '酿豆腐（蒸版）',
+    cat: 'egg',
+    level: 2,
+    emoji: '🧈',
+    why: '豆腐的植物蛋白和钙都好。豆制品不用戒，适量吃完全没问题，别顿顿吃就行。',
+    tip: '改蒸，芡汁用薄芡，生抽减半——传统版是油煎加浓芡，钠和油都翻倍。',
+    flags: { protein: true }
+  },
+  {
+    id: 'tofu-steam',
+    ings: ['豆腐'],
+    name: '葱花蒸豆腐',
+    cat: 'egg',
+    level: 1,
+    emoji: '🧈',
+    why: '豆腐蒸 8 分钟就好，一点油都不用，植物蛋白和钙都补上。比煎豆腐省事得多。',
+    tip: '用嫩豆腐，蒸出来倒掉盘里的水，再淋半勺生抽撒葱花。别用豆瓣酱。',
+    flags: { protein: true }
+  },
+
+  // ============================================================
+  // 蔬菜 —— 嘌呤都低，可以放心吃，每天至少一斤
+  // ============================================================
+  {
+    id: 'veg-choy-sum',
+    ings: ['菜心'],
+    name: '白灼菜心',
+    cat: 'veg',
+    level: 1,
+    emoji: '🥬',
+    why: '菜心钾和纤维都高，能帮着排钠，几乎不用油。蔬菜嘌呤都低，这一盘不占额度。',
+    tip: '豉油只淋盘子边缘别浇在菜上，蘸着吃能省一半钠。',
+    flags: { greenVeg: true }
+  },
+  {
+    id: 'veg-gailan',
+    ings: ['芥兰'],
+    name: '蒜蓉炒芥兰',
+    cat: 'veg',
+    level: 1,
+    emoji: '🥦',
+    why: '芥兰纤维和钾都高，属于绿叶菜里最该常吃的一类。一勺油就够炒一盘。',
+    tip: '别用猪油。蒜切碎后小火炒到金黄出香再下菜——一定要炒熟，生蒜末直接拌会刺激胃。蒜量减到两瓣就够。',
+    flags: { greenVeg: true, stomach: true }
+  },
+  {
+    id: 'veg-broccoli',
+    ings: ['西兰花'],
+    name: '清炒西兰花',
+    cat: 'veg',
+    level: 1,
+    emoji: '🥦',
+    why: '十字花科蔬菜，纤维在蔬菜里排前列，对血脂有帮助，嘌呤低。',
+    tip: '先焯水 1 分钟再快炒，省油又脆；茎别扔，切片一起炒。',
+    flags: { greenVeg: true }
+  },
+  {
+    id: 'veg-wintermelon',
+    ings: ['冬瓜'],
+    name: '蒜蓉蒸冬瓜',
+    cat: 'veg',
+    level: 1,
+    emoji: '🍈',
+    why: '冬瓜水分多、嘌呤极低，还利尿——能帮着把尿酸排出去，最该常吃的一样。',
+    tip: '蒸 15 分钟，淋蒜蓉生抽；蒜要蒸透，别用生蒜末。别煮成冬瓜汤再加盐。',
+    flags: { stomach: true }
+  },
+  {
+    id: 'veg-fungus-cucumber',
+    ings: ['木耳', '黄瓜'],
+    name: '木耳炒黄瓜',
+    cat: 'veg',
+    level: 1,
+    emoji: '🥒',
+    why: '原来这道是凉拌的，现在改成热炒——生冷的凉菜对胃炎和反流都不友好。木耳嘌呤很低，黄瓜水分足，一勺油就够。',
+    tip: '木耳提前泡发、焯水 1 分钟。黄瓜最后下，炒 40 秒就出锅，别炒出水。不放醋、不放生蒜末。',
+    flags: {}
+  },
+  {
+    id: 'veg-lettuce',
+    ings: ['生菜'],
+    name: '白灼生菜',
+    cat: 'veg',
+    level: 1,
+    emoji: '🥬',
+    why: '生菜水分和钾都高，水焯 20 秒就熟，油几乎为零。比炒省事，还不吸油。',
+    tip: '水开后下锅 20 秒捞出，豉油蘸着吃；别在锅里炒，生菜一炒就出一堆水。',
+    flags: { greenVeg: true }
+  },
+  {
+    id: 'veg-oilveggie',
+    ings: ['油麦菜'],
+    name: '蒜蓉炒油麦菜',
+    cat: 'veg',
+    level: 1,
+    emoji: '🥬',
+    why: '油麦菜是最容易买到、最便宜的绿叶菜之一，钾高、纤维好，一勺油炒一盘。',
+    tip: '锅要够热，下锅 40 秒出锅，久了变黄出水。蒜切碎小火炒熟再下菜，蒜量两瓣就够。',
+    flags: { greenVeg: true, stomach: true }
+  },
+  {
+    id: 'veg-sprout',
+    ings: ['豆芽'],
+    name: '清炒豆芽',
+    cat: 'veg',
+    level: 1,
+    emoji: '🌱',
+    why: '豆芽嘌呤低、水分足、热量几乎可以忽略，是"想吃点东西但不想加重负担"时的首选。',
+    tip: '大火快炒 1 分钟，加几滴醋保持脆；别放味精，豆芽本身有鲜味。',
+    flags: {}
+  },
+  {
+    id: 'veg-loofah',
+    ings: ['丝瓜'],
+    name: '蒜蓉炒丝瓜',
+    cat: 'veg',
+    level: 1,
+    emoji: '🥒',
+    why: '丝瓜嘌呤极低、水分多，夏天清口。和肉片版的区别是这道几乎零脂肪。',
+    tip: '丝瓜去皮切滚刀块立刻下锅，别久放会发黑。一勺油，盐一小撮。蒜先炒熟再下丝瓜，别用生蒜末。',
+    flags: { stomach: true }
+  },
+  {
+    id: 'veg-lotus',
+    ings: ['莲藕'],
+    name: '清炒藕片',
+    cat: 'veg',
+    level: 2,
+    emoji: '🪷',
+    why: '藕的纤维好，嘌呤在蔬菜里算中等，可以吃。但它淀粉不少，当菜吃就要少吃两口饭。',
+    tip: '切好泡清水防发黑；焯水 1 分钟再炒，省油又脆。这一盘上桌，米饭减半碗。',
+    flags: {}
+  },
+
+  // ============================================================
+  // 汤 —— 全部是 40 分钟内的滚汤
+  // 老火汤是这套菜单里最该改的一样，不放进菜单
+  // ============================================================
+  {
+    id: 'soup-wintermelon',
+    ings: ['冬瓜'],
+    name: '冬瓜薏米瘦肉汤',
+    cat: 'soup',
+    level: 1,
+    emoji: '🍲',
+    why: '冬瓜利尿、薏米祛湿，滚 40 分钟就够。关键是别煲成老火——时间一长嘌呤全跑汤里去了。',
+    tip: '40 分钟出锅；瘦肉先焯水，汤面浮油撇掉。',
+    flags: { protein: true }
+  },
+  {
+    id: 'soup-loofah',
+    ings: ['丝瓜', '鸡蛋'],
+    name: '丝瓜蛋花汤',
+    cat: 'soup',
+    level: 1,
+    emoji: '🥚',
+    why: '5 分钟出锅，几乎不用油，蛋的嘌呤极低，是最安全的一碗汤。',
+    tip: '出锅前打蛋花，不放味精，盐一小撮。',
+    flags: { protein: true }
+  },
+  {
+    id: 'soup-tomato-tofu',
+    ings: ['番茄', '豆腐'],
+    name: '番茄豆腐汤',
+    cat: 'soup',
+    level: 1,
+    emoji: '🍅',
+    why: '番茄的酸甜能提味，豆腐补植物蛋白，不放油也好喝。豆腐对胃是友好的，胃痛那几天吃这个比吃炒菜舒服。',
+    tip: '番茄先煸出汁再加水，靠番茄本味代替盐。反酸的时候把番茄换成节瓜或冬瓜，同样好喝、还不酸。',
+    flags: { protein: true, stomach: true }
+  },
+  {
+    id: 'soup-radish',
+    ings: ['白萝卜'],
+    name: '白萝卜瘦肉滚汤',
+    cat: 'soup',
+    level: 1,
+    emoji: '🥕',
+    why: '白萝卜嘌呤极低、便宜耐放，滚 20 分钟就出甜味，是最省事的一碗清汤。',
+    tip: '萝卜切薄片滚 15 分钟，瘦肉切薄片最后放；萝卜本身够甜，盐一小撮就够。',
+    flags: { protein: true }
+  },
+  {
+    id: 'soup-waxgourd',
+    ings: ['节瓜'],
+    name: '节瓜瘦肉滚汤',
+    cat: 'soup',
+    level: 1,
+    emoji: '🥒',
+    why: '节瓜水分足、嘌呤极低，夏天最清口。滚汤 15 分钟，比老火汤省事还安全。',
+    tip: '节瓜切块先滚 10 分钟，瘦肉片最后下，滚 2 分钟关火；别加味精。',
+    flags: { protein: true }
+  },
+  {
+    id: 'soup-watercress',
+    ings: ['西洋菜'],
+    name: '西洋菜瘦肉滚汤',
+    cat: 'soup',
+    level: 1,
+    emoji: '🥬',
+    why: '西洋菜广东秋冬才有，滚 15 分钟出一股清苦回甘，纤维在叶菜里算高的。当季最该喝的一碗。',
+    tip: '西洋菜最后 5 分钟下，煮久了发黄发苦。瘦肉切薄片最后放，别加味精。',
+    flags: { protein: true, greenVeg: true }
+  },
+  {
+    id: 'soup-yam-pork',
+    ings: ['山药'],
+    name: '山药瘦肉滚汤',
+    cat: 'soup',
+    level: 1,
+    emoji: '🥣',
+    why: '山药护胃、瘦肉补蛋白，汤清不油，是胃炎和反酸期间最合适的一道汤。嘌呤也低——因为滚 20 分钟就出锅。',
+    tip: '水开下瘦肉片和山药片，滚 15 分钟，关火前放盐。山药切厚一点，煮到一戳就烂。汤只喝小半碗，别当水喝。',
+    flags: { protein: true }
+  },
+  {
+    id: 'soup-fish-loofah',
+    ings: ['丝瓜'],
+    name: '丝瓜鱼片汤',
+    cat: 'soup',
+    level: 1,
+    emoji: '🐟',
+    why: '丝瓜清甜、嘌呤极低，配鱼片 10 分钟出锅，比肉汤还清口。夏天和初秋最合适。',
+    tip: '丝瓜先滚 5 分钟，鱼片最后下 30 秒。全程不煎不熬，汤是清的才对。',
+    flags: { protein: true }
+  },
+  {
+    id: 'soup-velvet',
+    ings: ['鹿茸菇'],
+    name: '鹿茸菇肉片汤',
+    cat: 'soup',
+    level: 2,
+    emoji: '🍄',
+    why: '菌菇的鲜味能顶掉一半盐，滚 15 分钟就够。鲜菇嘌呤中等，滚汤比煲汤安全得多。',
+    tip: '能用鲜菇就用鲜的；干货先泡发再焯水 1 分钟。滚 15 分钟关火，别煲成老火。汤只喝小半碗，别当水喝——汤水多了容易反酸。',
+    flags: { protein: true, stomach: true }
+  },
+
+  // ============================================================
+  // 主食 / 早餐
+  // ============================================================
+  {
+    id: 'milk',
+    ings: [],
+    name: '低脂牛奶 / 无糖酸奶',
+    cat: 'staple',
+    level: 1,
+    emoji: '🥛',
+    why: '乳制品嘌呤极低，而且能促进尿酸排出去——尿酸高的人最该加的蛋白质。每天 300 毫升。',
+    tip: '选低脂或脱脂、配料表只有"生牛乳"的；酸奶选无糖的，别买风味发酵乳。',
+    flags: { protein: true, dairy: true }
+  },
+  {
+    id: 'oats',
+    ings: [],
+    name: '燕麦粥',
+    cat: 'staple',
+    level: 1,
+    emoji: '🥣',
+    why: '燕麦里那种黏黏的纤维能降胆固醇，对血脂最有效的一招。嘌呤不算低但属植物性，可以吃。',
+    tip: '买纯燕麦片（配料表只有"燕麦"），别买即食甜燕麦。煮稠一点，别喝一大碗稀的——稀粥水分多，容易反酸。别空腹只喝这一碗。',
+    flags: {}
+  },
+  {
+    id: 'corn-rice',
+    ings: ['玉米'],
+    name: '玉米碴饭（白米 4 : 玉米碴 1）',
+    cat: 'staple',
+    level: 1,
+    emoji: '🌽',
+    why: '玉米嘌呤很低，混进米饭里最容易接受，口感变化小。但玉米碴是粗粮，胃不好的人比例要降下来。',
+    tip: '白米 4 杯 + 玉米碴 1 杯（原来写的 2:1 太粗，胃炎的人吃了会顶胃）。玉米碴先泡 30 分钟，一起煮。',
+    flags: {}
+  },
+  {
+    id: 'millet-rice',
+    ings: ['小米'],
+    name: '小米饭（白米 3 : 小米 1）',
+    cat: 'staple',
+    level: 1,
+    emoji: '🍚',
+    why: '比糙米更合适。糙米纤维太粗，胃炎的人吃了磨胃；小米细软、偏温，同样能换掉一部分白米，胃还不受罪。',
+    tip: '小米不用泡，和白米一起下锅就行。比例别超过 1:2，小米多了会散、不成粒。',
+    flags: { gentle: true }
+  },
+  {
+    id: 'steamed-yam-pumpkin',
+    ings: ['山药', '南瓜'],
+    name: '蒸山药 / 蒸南瓜',
+    cat: 'veg',
+    level: 1,
+    emoji: '🎃',
+    why: '两道对胃最友好的菜。南瓜的果胶能在胃黏膜上铺一层，山药细软好消化，两样钾高、嘌呤又低。当菜吃，配一口瘦肉，一餐就完整了。',
+    tip: '南瓜切块蒸 15 分钟，山药蒸 20 分钟，都别加糖。这是菜不是饭——米饭照吃，量按平时的来，南瓜一次一小碗就够，吃多了胀气。',
+    flags: {}
+  },
+  {
+    id: 'yam-congee',
+    ings: ['山药'],
+    name: '小米山药粥',
+    cat: 'staple',
+    level: 1,
+    emoji: '🥣',
+    why: '胃不舒服那几天就吃这个。小米偏温、山药护黏膜，两样都软烂好消化，比白粥强——白粥水分太多，反而容易反酸。',
+    tip: '小米一小把、山药切丁，一起煮 25 分钟到稠。别煮成稀汤，稠一点才不反流。配一碟青菜和一个蒸水蛋，就是一顿完整的饭。',
+    flags: { gentle: true }
+  },
+  {
+    id: 'noodle',
+    ings: [],
+    name: '清汤面',
+    cat: 'staple',
+    level: 2,
+    emoji: '🍜',
+    why: '面本身没问题，问题是一碗面汤里能有一天的盐，还有一份面顶一碗半饭的热量。汤水多也容易反酸。',
+    tip: '汤只放小半碗、别喝完，浇头用青菜和瘦肉，别用卤肉汁。面煮到软一点，胃好受；面只煮一小把，菜要多。',
+    flags: {}
+  }
+]
+
+module.exports = { CATS, LEVELS, DISHES }
+
+window.DISH = module.exports;
+
+/* ===== utils/advice.js ===== */
+module = { exports: {} };
+// ============================================================
+// 搭配评价
+// 四个约束：低钠（血压）+ 低饱和脂肪（血脂）+ 低嘌呤（尿酸）+ 不刺激胃（反流/胃炎）
+// 只做"生活方式提示"，不做任何病症判断
+// ============================================================
+
+function evaluate(selected) {
+  if (!selected || selected.length === 0) {
+    return { tone: 'empty', headline: '还没选菜', items: [] }
+  }
+
+  const items = []
+
+  const staple = selected.filter(d => d.cat === 'staple')
+  const soups = selected.filter(d => d.cat === 'soup')
+  const greenVeg = selected.filter(d => d.flags && d.flags.greenVeg)
+  const protein = selected.filter(d => d.flags && d.flags.protein)
+  const dairy = selected.filter(d => d.flags && d.flags.dairy)
+  const highSodium = selected.filter(d => d.flags && d.flags.highSodium)
+  const highPurine = selected.filter(d => d.flags && d.flags.highPurine)
+  const fried = selected.filter(d => d.flags && d.flags.fried)
+  const oldSoup = selected.filter(d => d.flags && d.flags.oldSoup)
+  const avoidDishes = selected.filter(d => d.avoid)
+  const level2 = selected.filter(d => d.level === 2)
+  const meats = selected.filter(d =>
+    ['pork', 'chicken', 'fish', 'beef'].indexOf(d.cat) > -1)
+  const stomach = selected.filter(d => d.flags && d.flags.stomach)
+  const gentle = selected.filter(d => d.flags && d.flags.gentle)
+
+  // ---------------- 加分项 ----------------
+  if (greenVeg.length > 0) {
+    items.push({
+      type: 'ok',
+      text: `有绿叶菜（${greenVeg.map(d => d.name).join('、')}），钾和纤维到位，蔬菜嘌呤低可以放心吃`
+    })
+  } else {
+    items.push({
+      type: 'warn',
+      text: '这一顿没有绿叶菜，缺钾和纤维。加一道白灼菜心或炒芥兰就补上了，蔬菜不占嘌呤额度'
+    })
+  }
+
+  if (protein.length > 0) {
+    const names = protein.map(d => d.name)
+    items.push({
+      type: 'ok',
+      text: `有优质蛋白（${names.slice(0, 3).join('、')}${names.length > 3 ? ' 等' : ''}）`
+    })
+  } else {
+    items.push({
+      type: 'warn',
+      text: '没有蛋白质。加个蒸水蛋或一杯低脂奶——这两样嘌呤几乎为零，是最安全的蛋白'
+    })
+  }
+
+  // 已经有蛋白但没乳制品时，才单独提醒加奶；完全没蛋白时上面那条已经提过了
+  if (protein.length > 0 && dairy.length === 0) {
+    items.push({
+      type: 'ok',
+      text: '建议今天加一杯低脂奶（300 毫升）——乳制品嘌呤几乎为零，还能帮着把尿酸排出去'
+    })
+  }
+
+  if (staple.length === 0) {
+    items.push({
+      type: 'warn',
+      text: '还没选主食。主食别省，换法比减量重要：白米里掺一点小米，比纯白米扛饿，又比糙米、玉米碴温和'
+    })
+  }
+
+  // ---------------- 减分项 ----------------
+  if (oldSoup.length > 0) {
+    items.push({
+      type: 'bad',
+      text: '老火汤是这整套菜单里最该改的一样。嘌呤特别容易溶进水里，煲两小时的汤，嘌呤比吃肉还高'
+    })
+  }
+
+  if (avoidDishes.length > 0) {
+    // 老火汤已有专门提示，这里不重复列
+    const rest = avoidDishes.filter(d => !(d.flags && d.flags.oldSoup))
+    if (rest.length > 0) {
+      const names = rest.map(d => d.name)
+      const shown = names.length > 2
+        ? names.slice(0, 2).join('、') + ` 等 ${names.length} 样`
+        : names.join('、')
+      items.push({
+        type: 'bad',
+        text: `「${shown}」属于要避开的。这几样对血压或尿酸是明确的坑，不是"少吃"能解决的`
+      })
+    }
+  }
+
+  // 已标"尽量避开"的菜不再单独提嘌呤，避免重复啰嗦
+  const purineActive = highPurine.filter(d => !d.avoid)
+  if (purineActive.length >= 2) {
+    const names = purineActive.map(d => d.name)
+    items.push({
+      type: 'bad',
+      text: `嘌呤偏高的有 ${purineActive.length} 道（${names.slice(0, 2).join('、')}${names.length > 2 ? ' 等' : ''}）。今天其他菜别再放肉汤、虾皮、紫菜`
+    })
+  } else if (purineActive.length === 1) {
+    items.push({
+      type: 'warn',
+      text: `「${purineActive[0].name}」嘌呤偏高，这顿吃了它，另外的菜就别再放肉汤或海鲜`
+    })
+  }
+
+  if (soups.length >= 2) {
+    items.push({
+      type: 'warn',
+      text: `汤有两道（${soups.map(d => d.name).join('、')}），一天钠容易超，而且汤水撑大胃最容易反酸。汤只喝小半碗，别当水喝`
+    })
+  }
+
+  // ---------------- 胃：反流 + 胃炎 ----------------
+  if (stomach.length >= 3) {
+    const names = stomach.map(d => d.name)
+    items.push({
+      type: 'warn',
+      text: `有 ${stomach.length} 道对胃不太友好（${names.slice(0, 3).join('、')}${names.length > 3 ? ' 等' : ''}）。番茄偏酸、苦瓜偏寒、菌菇和芹菜容易胀。胃不舒服就挑一道留下，其他换成蒸水蛋、蒸鱼、山药这类`
+    })
+  } else if (stomach.length > 0 && gentle.length === 0 && selected.length >= 4) {
+    items.push({
+      type: 'warn',
+      text: '这顿偏"硬"。加一道山药、蒸南瓜或小米粥，胃里会舒服很多'
+    })
+  }
+
+  // 汤水的喝法，只要选了汤就提醒一次
+  if (soups.length > 0 && soups.length < 2) {
+    items.push({
+      type: 'ok',
+      text: '汤放温再喝、只喝小半碗。烫的和大量的汤水都容易反酸，这两件事比"喝什么汤"更关键'
+    })
+  }
+
+  // 肉的总量：这是三高里最容易失控的一项，比"哪道菜"重要
+  if (meats.length >= 4) {
+    items.push({
+      type: 'warn',
+      text: `肉选了 ${meats.length} 道，一顿一两道就够（每道约 50 克生肉，半个手掌大）。多的那几道留着明天做`
+    })
+  }
+
+  if (level2.length >= 3) {
+    items.push({
+      type: 'warn',
+      text: `「看做法」的菜选了 ${level2.length} 道，有点多，挑一两道留到明天`
+    })
+  }
+
+  if (fried.length > 0) {
+    items.push({
+      type: 'bad',
+      text: '有过油的菜。今天炒菜全部改蒸、煮、白灼，油一天别超过 3 白瓷勺'
+    })
+  }
+
+  if (highSodium.length >= 2) {
+    items.push({
+      type: 'bad',
+      text: '高钠的菜两样以上了。今天所有菜都别再放盐和酱油'
+    })
+  }
+
+  const bad = items.filter(i => i.type === 'bad').length
+  const warn = items.filter(i => i.type === 'warn').length
+
+  let tone = 'good'
+  let headline = '这顿配得不错'
+  if (bad > 0) {
+    tone = 'bad'
+    headline = '这顿有点冒险'
+  } else if (warn > 0) {
+    tone = 'warn'
+    headline = '这顿还行，有两点要注意'
+  }
+
+  return { tone, headline, items }
+}
+
+// 每天的口径
+const DAILY_TIPS = [
+  '盐：一天不超过 5 克（一个啤酒瓶盖平铺的量）',
+  '油：一天 25–30 克，大约 3 白瓷勺',
+  '肉：一天 50–75 克生重，约半个手掌大。做法可以多换，量别加',
+  '猪肉只买瘦肉（里脊、后腿、赤肉）；排骨和五花看着瘦，脂肪其实是瘦肉的三四倍，别买',
+  '体重：每减 1 公斤，收缩压大约降 1 毫米汞柱。减 5 公斤比多吃半片药划算',
+  '水：一天 2000 毫升以上，尿酸主要靠尿排出去',
+  '蔬菜：一天一斤，绿叶菜占一半。蔬菜嘌呤都低，不占额度',
+  '蛋和低脂奶：每天都可以有，嘌呤几乎为零',
+  '酱油：用蘸不用浇，一小勺约 1 克盐，一天别超过 3 勺',
+  '盐焗粉、鸡精能不用就不用；沙姜粉、五指毛桃、胡椒粉放心用',
+  '鱼：一周两到三次，清蒸或白灼。鱼汤要清汆，别煎了再熬到发白',
+  '汤：40 分钟内的滚汤，老火汤、鸡汤、骨头汤这三样不喝。喝只喝小半碗，别当水',
+  '吃完别马上躺：坐或慢走 20 分钟再休息。晚饭七点前吃完，睡前 3 小时不再进食',
+  '一天分五顿：三顿正餐 + 上午十点、下午四点各加一次，每顿七分饱，比三顿吃撑强',
+  '每口嚼 20 下，一顿吃够 20 分钟；烫的放温再入口，65 度以上伤食管',
+  '会反酸的几样不上桌：红薯、糯米、浓茶、咖啡、碳酸饮料',
+  '甜饮料、蜂蜜、果汁：不喝，果糖会让尿酸升上去',
+  '动物内脏、虾蟹贝、腌制品：这几样不上桌'
+]
+
+module.exports = { evaluate, DAILY_TIPS }
+
+window.ADV = module.exports;
+
+/* ===== data/extras.js ===== */
+module = { exports: {} };
+// ============================================================
+// 建议页数据：体重 / 养生茶 / 当季蔬果
+// 这一页不是"点菜"，是"看建议"，所以卡片不可选
+//
+// tone: ok 可以 / warn 注意 / bad 别 / plain 中性
+// ============================================================
+
+// ------------------------------------------------------------
+// 一、体重
+// 66 kg，身高约 1.55–1.60 m
+// BMI = 66/1.55² = 27.5 ～ 66/1.60² = 25.8，落在「超重」（24.0–27.9）
+// 依据《成人体重判定》WS/T 428—2013：正常 18.5–23.9，超重 24.0–27.9，肥胖 ≥28.0
+// 女性腰围 ≥85 cm 为中心型肥胖
+// 《中国高血压防治指南（2024 年修订版）》：体重每减 1 kg，收缩压约降 1 mmHg
+// ------------------------------------------------------------
+const BODY = {
+  now: '66 公斤，身高 1.55–1.60 米',
+  bmi: 'BMI 25.8–27.5，属于「超重」',
+  target: '先减到 61 公斤，一个月减 1–2 公斤，不着急',
+  lines: [
+    {
+      tone: 'warn',
+      name: '为什么要减',
+      text: '体重每减 1 公斤，收缩压大约降 1 毫米汞柱。减 5 公斤相当于多吃了半片降压药，而且不用花钱、不伤肝肾。肚子大这一项影响更大——内脏脂肪减下去以后，血压和血脂的改善比单纯看体重更明显。'
+    },
+    {
+      tone: 'plain',
+      name: '先量一下腰围',
+      text: '女性腰围 85 厘米以上算中心型肥胖，80–85 是前期。用软尺在肚脐那一圈量，别吸气。这个数字比体重更能说明问题，量一次记下来，一个月后再量。'
+    },
+    {
+      tone: 'ok',
+      name: '怎么减：不用节食，换顺序',
+      text: '先吃菜，再吃肉，最后吃饭。菜先占住位置，饭自然吃不多。汤只喝小半碗、而且要放温——反流的人汤多了反而难受。这一条不改任何菜谱，最容易做到。'
+    },
+    {
+      tone: 'ok',
+      name: '饭不用硬减，但菜要先吃',
+      text: '一餐一碗（约 100 克熟饭）就够。饭量大、吃少了会饿，但硬减成半碗反而撑不住，下午会去抓零食。重点是顺序和配比：先吃菜、再吃肉、最后吃饭。同样一碗饭，掺一点玉米碴或小米更扛饿。'
+    },
+    {
+      tone: 'ok',
+      name: '吃不饱就多吃这几样',
+      text: '冬瓜、白萝卜、大白菜、菌菇、豆腐、魔芋、番茄。这几样水分大、热量极低，吃到撑也不会胖——一斤冬瓜才 60 千卡，跟一口饭差不多。菜要有味道才吃得下，用蒜、姜、沙姜粉、五指毛桃、胡椒提味，别用油和盐。'
+    },
+    {
+      tone: 'ok',
+      name: '每餐必须有一个手掌的蛋白质',
+      text: '肉、鱼、蛋、豆腐任选一样，一个手掌大小。蛋白质最扛饿，吃不够就会一直想找东西吃。饭量大的人常常是饭多、肉少、蛋白不够——把饭减一口、加一个蒸水蛋，反而更顶饿。'
+    },
+    {
+      tone: 'ok',
+      name: '吃慢一点，一顿 20 分钟',
+      text: '饱的感觉从胃传到脑子要 20 分钟。干活忙、吃得快的人，一碗饭下肚还没觉得饱，等觉得饱已经吃多了。中间把筷子放下两次、先吃菜，这一条不用改任何菜谱就能少吃两三成。'
+    },
+    {
+      tone: 'ok',
+      name: '肉一天一个手掌大',
+      text: '50–75 克生重，约半个手掌。做法可以天天换，量别加。'
+    },
+    {
+      tone: 'ok',
+      name: '蔬菜一天一斤',
+      text: '绿叶菜占一半。蔬菜热量几乎可以忽略，吃到饱也不会胖，还能补钾排钠、帮着排尿酸。这是最划算的一样。'
+    },
+    {
+      tone: 'warn',
+      name: '别用饿的办法',
+      text: '不吃主食、跳餐、只吃水煮菜，撑不过两周。而且饿急了尿酸会往上冲——身体分解肌肉供能时会产生嘌呤。饿着的时候人会发虚、没力气，撑不住一天。一个月减 1–2 公斤最稳。'
+    }
+  ]
+}
+
+// ------------------------------------------------------------
+// 一·B、反流 + 胃炎（2026-10-27 新增）
+// 依据：
+//  - 2020 年中国胃食管反流病专家共识 / 2022 年多学科诊疗共识：生活方式干预是一线治疗
+//  - 中国指南特别强调：避免浓茶、辛辣、过烫饮食；晚餐与睡眠间隔 ≥3 小时
+//  - 床头整体抬高 10–20 cm（不是垫枕头）；左侧卧；减重有确凿证据
+//  - 国家中医药管理局脾胃病发布会：避免生蒜生葱、过冷过热、粗糙食物、高酸食物、
+//    甜食（尤其地瓜会引起严重反酸）；不宜大量喝水和汤；每口嚼 20–30 下
+//  - 慢性胃炎：食物以清淡软烂、低纤维为主；忌浓茶浓咖啡、辛辣、生冷硬粗糙
+// ------------------------------------------------------------
+const STOMACH = {
+  lines: [
+    {
+      tone: 'ok',
+      name: '一天五顿，每顿七分饱',
+      text: '这一条同时解决两件事：反流最怕一次吃太多把胃撑大，但吃少了又会饿。把三顿的量分成五顿——三顿正餐 + 上午十点、下午四点各加一次（无糖酸奶、一个水果或十颗坚果）。总量不减，每顿少一点，胃不撑、人也不饿。'
+    },
+    {
+      tone: 'ok',
+      name: '吃完别马上躺',
+      text: '反流最直接的原因就是躺下。饭后半小时内别平躺、别弯腰搬重东西，坐着或慢走 20 分钟。中午想歇一会儿就靠着椅子眯，别平躺在床上。'
+    },
+    {
+      tone: 'ok',
+      name: '晚饭七点前吃完，睡前 3 小时不进食',
+      text: '夜里反流最伤食管，因为人躺着、重力帮不上忙。晚饭七点前吃完，之后只喝温水。夜宵、睡前水果、睡前那杯牛奶都停掉。'
+    },
+    {
+      tone: 'ok',
+      name: '床头整体抬高 15 厘米',
+      text: '这件小事很多人做错：不是多垫一个枕头——垫枕头只会压脖子，胃还是平的。要把床头那两条腿垫高 15 厘米（砖头、木块、书都行），让整个上半身一起倾斜。侧睡朝左边更好，胃在左边，左侧卧不容易反上来。'
+    },
+    {
+      tone: 'ok',
+      name: '汤放温、只喝小半碗',
+      text: '烫的伤食管黏膜，大量的汤水把胃撑大。广东人习惯饭前喝汤，可以，但一小碗就够，而且放到不烫嘴再喝。汤里的肉和菜可以吃，汤别当水灌。'
+    },
+    {
+      tone: 'ok',
+      name: '吃软一点、慢一点',
+      text: '每口嚼 20 下，一顿吃够 20 分钟。做菜多用蒸、炖、烩，少用煎炸和凉拌。菜切小、炒到软，别追求"脆"——脆就是纤维粗，胃要多磨。'
+    },
+    {
+      tone: 'bad',
+      name: '这几样会直接反酸，不上桌',
+      text: '红薯（地瓜）、糯米做的（粽子、汤圆、糯米鸡）、浓茶、咖啡、碳酸饮料、辣椒、生蒜生葱、肥肉和油炸食品、甜食。红薯是明确会引起严重反酸的一种，已经从菜单里删掉了。'
+    },
+    {
+      tone: 'warn',
+      name: '发作那几天就吃这几样',
+      text: '反酸、烧心、胃痛的日子，菜单缩小到：小米山药粥、蒸水蛋、清蒸鱼、白灼菜心、山药瘦肉汤、蒸南瓜。番茄、苦瓜、菌菇、芹菜、蒜蓉这几类先停。等舒服了再恢复整份菜单，不用一直吃得这么窄。'
+    },
+    {
+      tone: 'ok',
+      name: '胃药按类型对时间，别都饭后一起吃',
+      text: '胃药分好几类，吃的时间完全不一样，搞错了效果差一半。看药盒上的名字对一下：奥美拉唑、雷贝拉唑、泮托拉唑、埃索美拉唑这类（"拉唑"结尾）——早饭前 30 到 60 分钟空腹吃，一天一次就早上那顿；莫沙必利、多潘立酮这类（促动力、加快胃排空）——饭前 15 到 30 分钟；铝碳酸镁这类嚼着吃的——饭后 1 到 2 小时、睡前，或胃痛发作时补一次；硫糖铝——饭前 1 小时空腹吃；法莫替丁、雷尼替丁这类——睡前吃。'
+    },
+    {
+      tone: 'ok',
+      name: '嚼着吃的那类，和别的药错开两小时',
+      text: '铝碳酸镁、硫糖铝会把别的药一起吸住，同时吃等于白吃。跟降压药、降脂药、钙片、铁剂都隔开 1 到 2 小时。这一类必须嚼碎再咽，整片吞下去基本没用。'
+    }
+  ]
+}
+
+// ------------------------------------------------------------
+// 二、养生茶
+// 家里有的：金银花、菊花、花旗参、枸杞、红枣
+// 原则：不加糖（蜂蜜也不行）、不指望它治病、分清楚哪些能天天喝
+// 2026-10-27 追加：还有反流 + 胃炎。
+//   山楂促进胃酸分泌、决明子性寒滑肠、浓茶刺激胃黏膜 → 这三样全部撤掉
+//   依据：国家中医药管理局脾胃病发布会（避免高酸食物：醋、柠檬、生山楂、浓茶咖啡）；
+//        《慢性胃炎》饮食禁忌（忌浓茶、浓咖啡等刺激性饮料）
+// ------------------------------------------------------------
+const TEAS = [
+  {
+    tone: 'ok',
+    name: '菊花 + 枸杞　最稳的一款，可以天天喝',
+    text: '菊花 3–5 朵、枸杞 10 粒，80 度左右的水泡。菊花性微寒，枸杞性平能中和，两个配一起不伤胃。适合血压高又容易头晕、眼干的人。枸杞有糖分，10 粒就够，别一把一把抓。不加冰糖，放温了再喝。'
+  },
+  {
+    tone: 'bad',
+    name: '山楂、决明子　不喝',
+    text: '山楂是这几种里最酸的，会直接催胃酸分泌，反酸和胃炎的人喝了就是往伤口上浇酸。决明子性寒、滑肠，胃不好的人喝了容易拉肚子。这两样都从单子上划掉，别泡。'
+  },
+  {
+    tone: 'warn',
+    name: '金银花　上火那几天才喝',
+    text: '金银花 3–5 克，喉咙痛、口疮、天热上火时喝几天就好。它性寒，长期天天喝会伤脾胃，容易拉肚子。别把它当水喝，胃凉的那几天也别喝。'
+  },
+  {
+    tone: 'warn',
+    name: '红枣　当零食吃，一天最多 2 颗',
+    text: '干枣的糖有六七成，2 颗就顶一份水果的糖。超重、又要控血脂和尿酸，这个不能当茶天天泡。想吃就一天 2 颗，直接吃，别配枸杞煮水。'
+  },
+  {
+    tone: 'bad',
+    name: '花旗参　不喝',
+    text: '你天天在吃降压药，花旗参可能把药效放大，血压本来就波动的时候喝容易头晕、站不稳。所以这个直接不泡。要提神、要补气，用枸杞那几样，或者喝淡绿茶。'
+  },
+  {
+    tone: 'ok',
+    name: '淡绿茶　饭后半小时喝',
+    text: '茶多酚对血脂有实打实的帮助，不用买任何药材。但有两条：一是必须淡，泡到颜色浅黄就够，浓茶刺激胃黏膜、也会让反酸更厉害；二是必须饭后半小时，空腹喝伤胃。下午四点以后不喝，影响睡眠。'
+  },
+  {
+    tone: 'ok',
+    name: '所有茶都不加糖、不加蜂蜜',
+    text: '这一条最要紧。蜂蜜的果糖含量很高，果糖在体内代谢会直接产生尿酸，等于一边喝养生茶一边把尿酸往上推。茶本身的苦味和回甘，喝两周就习惯了。'
+  },
+  {
+    tone: 'plain',
+    name: '最稳的一杯：温开水',
+    text: '反流的人喝温水比喝茶舒服，一天 2000 毫升以上还能帮着排尿酸。不烫嘴就行，别喝刚烧开的。'
+  }
+]
+
+// ------------------------------------------------------------
+// 三、当季蔬菜（广东 · 10 月底到 11 月）
+// 依据：广东省农业农村厅 11 月产销分析——在田和产量靠前的是菜心、苦瓜、
+// 小白菜、大白菜、胡萝卜、番茄、空心菜；秋冬时令含芹菜、生菜、油麦菜、
+// 白萝卜、莲藕、冬瓜、南瓜
+// ------------------------------------------------------------
+const SEASON_VEG = [
+  { tone: 'ok', id: 'veg-choy-sum-fresh', name: '菜心', text: '11 月最嫩，广东产量第一位。白灼，豉油蘸着吃别浇上去。' },
+  { tone: 'ok', id: 'veg-gai-lan-fresh', name: '芥兰', text: '当季脆甜，蒜蓉炒，一勺油。茎粗的先焯 30 秒。' },
+  { tone: 'ok', id: 'veg-watercress-fresh', name: '西洋菜', text: '广东秋冬才有，滚汤 15 分钟就好，配瘦肉片。别煲久。' },
+  { tone: 'ok', id: 'veg-garland-fresh', name: '茼蒿', text: '当季香气足，焯水后凉拌或下汤。钾高，但别久煮。' },
+  { tone: 'ok', id: 'veg-bok-choy-fresh', name: '小白菜', text: '产量大、便宜，蒜蓉炒或白灼都行。' },
+  { tone: 'ok', id: 'veg-napa-fresh', name: '大白菜', text: '这个季节最便宜。炖豆腐、煮汤，纤维够还顶饱。' },
+  { tone: 'ok', id: 'veg-daikon-fresh', name: '白萝卜', text: '当季甜，滚汤 20 分钟就出味。嘌呤极低，可以多吃。' },
+  { tone: 'ok', id: 'veg-carrot-fresh', name: '胡萝卜', text: '煲汤炒菜都行。油炒比水煮好吸收，但油别多。' },
+  { tone: 'ok', id: 'veg-lotus-root-fresh', name: '莲藕', text: '当季，清炒或煲汤。淀粉多，当菜吃就少吃两口饭。' },
+  { tone: 'ok', id: 'veg-winter-melon-fresh', name: '冬瓜', text: '还能吃到年底。利尿、嘌呤极低，尿酸高的人优先选它。' },
+  { tone: 'ok', id: 'veg-tomato-fresh', name: '番茄', text: '当季还有，酸甜能顶掉一部分盐。煮汤、炒蛋都靠它提味。' },
+  { tone: 'ok', id: 'veg-bitter-melon-fresh', name: '苦瓜', text: '广东 11 月产量还很高。炒肉片、炒蛋、滚汤都行。' }
+]
+
+// ------------------------------------------------------------
+// 四、水果
+// 关键：果糖会直接生成尿酸，所以要按果糖高低排，不按甜不甜排
+// 每天总量 200–350 克，分两次吃，别榨汁、别吃果干
+// ------------------------------------------------------------
+const FRUIT_WARN = {
+  tone: 'bad',
+  name: '最要紧的一条：柚子这个季节别吃',
+  text: '你在吃降压药，很可能还在吃降脂药。柚子（西柚、葡萄柚，还有沙田柚、蜜柚）会让硝苯地平、非洛地平、氨氯地平等降压药，以及辛伐他汀、阿托伐他汀等降脂药的血药浓度成倍升高，可能血压骤降、头晕晕倒，或引起肌肉损伤。这个影响能持续 24–72 小时，错开时间吃没用。广东 11 月正是柚子大量上市的时候，整个柚子季都不吃，想吃水果就用番石榴、苹果、梨替，橙子也行但别空腹吃。'
+}
+
+const FRUIT = [
+  {
+    tone: 'ok',
+    name: '怎么吃：不空腹、不冰',
+    text: '有反流和胃炎的话，这两条比"吃哪种水果"更重要。一是别空腹吃，放在饭后一小时；二是别吃刚从冰箱拿出来的，放温了再吃。冰的水果进胃，反酸和胃痛都可能被激出来。'
+  },
+  {
+    tone: 'ok',
+    id: 'fruit-pear', name: '梨',
+    text: '当季，水分足、果糖不高，纤维在水果里算多的。一天半个到一个。'
+  },
+  {
+    tone: 'ok',
+    id: 'fruit-apple', name: '苹果',
+    text: '全年都有，果胶对血脂有帮助。一天一个中等大小。'
+  },
+  {
+    tone: 'ok',
+    id: 'fruit-guava', name: '番石榴（芭乐）',
+    text: '广东秋冬有。糖低、纤维高、钾高，这几样里最合适。不酸，胃也受得住。别蘸梅粉（那是盐）。'
+  },
+  {
+    tone: 'ok',
+    id: 'fruit-orange', name: '橙子、贡柑',
+    text: '11 月当季。维 C 和钾都高，不冲突降压药。偏酸，一天一个、别空腹、别吃冰的。'
+  },
+  {
+    tone: 'warn',
+    id: 'fruit-kiwi', name: '猕猴桃',
+    text: '维 C 在水果里排前列，果糖中等。酸度高，容易烧心，一天一个、饭后吃。'
+  },
+  {
+    tone: 'warn',
+    id: 'fruit-strawberry', name: '草莓',
+    text: '果糖低，冬春季有。偏酸，不空腹吃。洗干净直接吃，别蘸糖。'
+  },
+  {
+    tone: 'warn',
+    id: 'fruit-grape', name: '葡萄 —— 爱吃的这个，能吃但要限量',
+    text: '果糖约 7.5%，偏高，而果糖正是升尿酸那个。一小串约 100 克、十几颗，吃完不添。别榨汁、别吃葡萄干。'
+  },
+  {
+    tone: 'warn',
+    id: 'fruit-banana', name: '香蕉',
+    text: '糖和热量都不低，一根大的顶小半碗饭。要吃就一根分两次，别当加餐天天吃。'
+  },
+  {
+    tone: 'bad',
+    name: '荔枝、龙眼、榴莲',
+    text: '果糖都在 10% 以上，热量还高。这三样对尿酸和体重都不友好。'
+  },
+  {
+    tone: 'bad',
+    name: '果汁、果干、蜜饯',
+    text: '果汁一杯要三四个水果，纤维没了，果糖吸收更快；果干的糖是浓缩的；蜜饯还加了一堆糖和盐。想吃水果就吃整个的。'
+  }
+]
+
+module.exports = { BODY, STOMACH, TEAS, SEASON_VEG, FRUIT_WARN, FRUIT }
+
+window.EXTRA = module.exports;
+</script>
+
+<script>
+(function () {
+  'use strict';
+
+  if (!window.DISH || !window.ADV || !window.EXTRA) {
+    document.getElementById('list').innerHTML =
+      '<div class="loading">菜单没加载出来<br>请检查网络后刷新页面</div>';
+    return;
+  }
+
+  var DISHES = window.DISH.DISHES;
+  var CATS = window.DISH.CATS;
+  var LEVELS = window.DISH.LEVELS;
+  var evaluate = window.ADV.evaluate;
+  var DAILY_TIPS = window.ADV.DAILY_TIPS;
+  var EXT = window.EXTRA;
+
+  // ---------- 本地保存：今天选的，明天打开自动清空 ----------
+  var STORE_KEY = 'mama-menu-v1';
+  var todayKey = (function () {
+    var d = new Date();
+    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+  })();
+
+  var state = { cat: null, ids: loadIds() };
+
+  function loadIds() {
+    try {
+      var raw = localStorage.getItem(STORE_KEY);
+      if (!raw) return [];
+      var obj = JSON.parse(raw);
+      if (obj.date !== todayKey) return [];
+      var valid = DISHES.filter(function (x) { return obj.ids.indexOf(x.id) > -1; });
+      return valid.map(function (x) { return x.id; });
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function saveIds() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({ date: todayKey, ids: state.ids }));
+    } catch (e) {}
+  }
+
+  // ---------- 日期 ----------
+  var d = new Date();
+  var week = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+  document.getElementById('today').textContent =
+    (d.getMonth() + 1) + ' 月 ' + d.getDate() + ' 日 · ' + week[d.getDay()];
+
+  // ---------- 分类 ----------
+  function renderCats() {
+    var box = document.getElementById('cats');
+    box.innerHTML = '';
+
+    var all = EXTRA_HEAD.concat(CATS, EXTRA_TAIL, [BODY_CAT]);
+
+    all.forEach(function (c) {
+      var el = document.createElement('button');
+      el.type = 'button';
+      var x = isExtra(c.key);
+      el.className = 'cat' + (x ? ' cat-x' : '') + (state.cat === c.key ? ' on' : '');
+      el.textContent = c.label;
+      el.onclick = function () {
+        state.cat = c.key;
+        renderCats();
+        renderList();
+      };
+      box.appendChild(el);
+    });
+  }
+
+  // ---------- 列表（按食材分组）----------
+  function renderList() {
+    var box = document.getElementById('list');
+    box.innerHTML = '';
+
+    if (isExtra(state.cat)) {
+      document.getElementById('bar').style.display = 'none';
+      document.querySelector('.legend').style.display = 'none';
+      box.innerHTML = extraHtml(state.cat);
+      return;
+    }
+    document.getElementById('bar').style.display = '';
+    document.querySelector('.legend').style.display = '';
+
+    var grid = document.createElement('div');
+    grid.className = 'grid';
+    box.appendChild(grid);
+
+    CATS.forEach(function (c) {
+      if (state.cat !== c.key) return;
+
+      var items = DISHES.filter(function (x) { return x.cat === c.key; })
+        .sort(function (a, b) { return a.level - b.level; });
+
+      items.forEach(function (x) {
+        grid.appendChild(buildTile(x));
+      });
+    });
+  }
+
+  // 一级页的一张卡：只有图和菜名。点图进详情，点右下角圆钮直接加入这顿
+  function buildTile(x) {
+    var on = state.ids.indexOf(x.id) > -1;
+
+    var tile = document.createElement('div');
+    tile.className = 'tile' + (on ? ' on' : '');
+    tile.setAttribute('role', 'button');
+    tile.setAttribute('aria-pressed', on ? 'true' : 'false');
+    tile.setAttribute('data-id', x.id);
+
+    var fig = document.createElement('div');
+    fig.className = 'tile-fig';
+    // emoji 垫底，照片盖上去；照片没出来就露 emoji
+    fig.textContent = x.emoji;
+    var im = document.createElement('img');
+    im.src = 'images/final/' + x.id + '.webp';
+    im.alt = x.name;
+    im.loading = 'lazy';
+    im.decoding = 'async';
+    im.onerror = function () { im.style.display = 'none'; };
+    fig.appendChild(im);
+
+    // 左上角等级色点：绿=放心吃 黄=看做法 红=少吃
+    var dot = document.createElement('span');
+    dot.className = 'tile-dot d' + x.level;
+    dot.title = LEVELS[x.level].text;
+    fig.appendChild(dot);
+
+    var add = document.createElement('button');
+    add.type = 'button';
+    add.className = 'tile-add';
+    add.textContent = on ? '\u2713' : '+';
+    add.setAttribute('aria-label', on ? '取消这道' : '加入这道');
+    add.onclick = function (e) {
+      e.stopPropagation();
+      toggleId(x.id);
+    };
+    fig.appendChild(add);
+
+    var name = document.createElement('div');
+    name.className = 'tile-n';
+    name.textContent = x.name;
+
+    tile.appendChild(fig);
+    tile.appendChild(name);
+    tile.onclick = function () { openDetail(x.id); };
+
+    return tile;
+  }
+
+  // 只更新这一张卡的状态，不整页重排，免得滚动位置跳掉
+  function syncTile(id) {
+    var el = document.querySelector('.tile[data-id="' + id + '"]');
+    if (!el) return;
+    var on = state.ids.indexOf(id) > -1;
+    el.className = 'tile' + (on ? ' on' : '');
+    el.setAttribute('aria-pressed', on ? 'true' : 'false');
+    var a = el.querySelector('.tile-add');
+    if (a) {
+      a.textContent = on ? '\u2713' : '+';
+      a.setAttribute('aria-label', on ? '取消这道' : '加入这道');
+    }
+  }
+
+  function toggleId(id) {
+    var i = state.ids.indexOf(id);
+    if (i > -1) state.ids.splice(i, 1);
+    else state.ids.push(id);
+    saveIds();
+    renderBar();
+    syncTile(id);
+    syncDtBtn();
+    if (sheetOpen) renderAdvice();
+  }
+
+  // ---------- 二级页：详情 ----------
+  var dtId = null;
+
+  function openDetail(id) {
+    var x = null;
+    DISHES.forEach(function (d) { if (d.id === id) x = d; });
+    if (!x) return;
+
+    dtId = id;
+    document.getElementById('dtCrumb').textContent = x.name;
+    document.getElementById('dtName').textContent = x.name;
+
+    var fig = document.getElementById('dtFig');
+    fig.innerHTML = '';
+    var im = new Image();
+    im.src = 'images/final/' + x.id + '.webp';
+    im.alt = x.name;
+    im.onerror = function () { im.style.display = 'none'; };
+    fig.appendChild(im);
+
+    var catLabel = '';
+    CATS.forEach(function (c) { if (c.key === x.cat) catLabel = c.label; });
+    var meta = document.getElementById('dtMeta');
+    meta.innerHTML =
+      '<span class="badge b' + x.level + '">' + LEVELS[x.level].text + '</span>' +
+      (catLabel ? '<span class="dt-cat">' + catLabel + '</span>' : '') +
+      (x.ings && x.ings.length ? '<span class="dt-cat">' + x.ings.join('、') + '</span>' : '');
+
+    document.getElementById('dtWhy').textContent = x.why;
+    document.getElementById('dtTip').textContent = x.tip;
+    syncDtBtn();
+
+    var dt = document.getElementById('dt');
+    dt.className = 'dt on';
+    dt.scrollTop = 0;
+    document.body.style.overflow = 'hidden';
+    try { history.pushState({ dt: 1 }, ''); } catch (e) {}
+  }
+
+  function syncDtBtn() {
+    var btn = document.getElementById('dtAdd');
+    if (!btn) return;
+    var on = dtId && state.ids.indexOf(dtId) > -1;
+    btn.textContent = on ? '\u2713 已在这顿里，点此移除' : '加入这顿';
+    btn.className = 'dt-btn' + (on ? ' on' : '');
+  }
+
+  function closeDetail(fromPop) {
+    if (!dtId) return;
+    document.getElementById('dt').className = 'dt';
+    document.body.style.overflow = '';
+    dtId = null;
+    if (!fromPop) {
+      try { history.back(); } catch (e) {}
+    }
+  }
+
+  window.addEventListener('popstate', function () {
+    if (dtId) closeDetail(true);
+  });
+
+  function renderBar() {
+    var bar = document.getElementById('bar');
+    document.getElementById('count').textContent = state.ids.length;
+    bar.className = 'bar' + (state.ids.length ? ' on' : '');
+  }
+
+  // ============================================================
+  // 随便配一桌
+  // ------------------------------------------------------------
+  // 规则全部集中在 PAIR 里，页面别处不再写死分类名。
+  // 以后加菜：只要 data/dishes.js 里新菜有 cat（对应 CATS 里有 role）和 ings，
+  // 它就自动进搭配池；改这里的数字就能变成「两菜一汤」「四菜一汤」。
+  // ============================================================
+  var PAIR = {
+    dishes: 3,        // 几道菜（不含汤）
+    soups: 1,         // 几道汤
+    maxLv2: 1,        // 一桌最多几道「看做法」
+    maxPerCat: 1,     // 同一分类最多几道（挡住"三道都是猪肉"）
+    roles: {          // 每种角色的数量上下限，保证有荤有素
+      meat: { min: 1, max: 2 },
+      veg:  { min: 1, max: 2 },
+      egg:  { min: 0, max: 1 }
+    },
+    noRepeatIng: true, // 同桌不重样（不会两道冬瓜、两道木耳）
+    tries: 80
+  };
+
+  // 分类 → 角色。CATS 里没写 role 的分类不参与配桌（照样在分类条里显示）
+  var ROLE_OF = {};
+  CATS.forEach(function (c) { if (c.role) ROLE_OF[c.key] = c.role; });
+
+  // 按角色分池。主食不进池子——它不属于"这几道菜"，是另外加的
+  var POOL = {};
+  DISHES.forEach(function (x) {
+    var r = ROLE_OF[x.cat];
+    if (!r || r === 'staple') return;
+    (POOL[r] = POOL[r] || []).push(x);
+  });
+
+  var ROLE_LABEL = { meat: '荤', veg: '素', egg: '蛋豆', soup: '汤' };
+
+  function randOf(a) { return a[Math.floor(Math.random() * a.length)]; }
+
+  // 这道菜能不能进这一桌
+  function clashes(x, chosen) {
+    var sameCat = 0;
+    for (var i = 0; i < chosen.length; i++) {
+      if (chosen[i].id === x.id) return true;
+      if (chosen[i].cat === x.cat) sameCat++;
+    }
+    if (sameCat >= PAIR.maxPerCat) return true;
+    if (PAIR.noRepeatIng) {
+      var used = {};
+      chosen.forEach(function (c) {
+        (c.ings || []).forEach(function (k) { used[k] = 1; });
+      });
+      var dup = (x.ings || []).some(function (k) { return used[k]; });
+      if (dup) return true;
+    }
+    return false;
+  }
+
+  function pickFor(role, chosen) {
+    var pool = POOL[role] || [];
+    var free = pool.filter(function (x) { return !clashes(x, chosen); });
+    if (!free.length) return null;
+    var lv2Used = chosen.filter(function (x) { return x.level === 2; }).length;
+    var lv1 = free.filter(function (x) { return x.level === 1; });
+    var lv2 = free.filter(function (x) { return x.level === 2; });
+    // 八成给「放心吃」；偶尔掺一道「看做法」，但不超过上限
+    if (lv2.length && lv2Used < PAIR.maxLv2 && (!lv1.length || Math.random() < 0.2)) {
+      return randOf(lv2);
+    }
+    return randOf(lv1.length ? lv1 : free);
+  }
+
+  // 先排角色：固定一荤一素，剩下的位置随机，但不超过角色上限
+  function rolePlan() {
+    var plan = ['meat', 'veg'];
+    for (var i = plan.length; i < PAIR.dishes; i++) {
+      var cand = ['egg', 'meat', 'veg'].filter(function (r) {
+        var n = plan.filter(function (p) { return p === r; }).length;
+        var cap = PAIR.roles[r] ? PAIR.roles[r].max : 1;
+        return n < cap;
+      });
+      plan.push(cand.length ? randOf(cand) : 'veg');
+    }
+    return plan;
+  }
+
+  function makeSet() {
+    for (var t = 0; t < PAIR.tries; t++) {
+      var chosen = [];
+      var plan = rolePlan();
+      var ok = true;
+      for (var s = 0; s < PAIR.soups && ok; s++) {
+        var sp = pickFor('soup', chosen);
+        if (!sp) ok = false; else chosen.push(sp);
+      }
+      for (var i = 0; i < plan.length && ok; i++) {
+        var dd = pickFor(plan[i], chosen);
+        if (!dd) ok = false; else chosen.push(dd);
+      }
+      if (!ok) continue;
+      var lv2n = chosen.filter(function (x) { return x.level === 2; }).length;
+      if (lv2n > PAIR.maxLv2) continue;
+      return chosen;
+    }
+    return null;
+  }
+
+  var pairSet = null;
+
+  function pairRow(x) {
+    var role = ROLE_OF[x.cat];
+    var catLabel = '';
+    CATS.forEach(function (c) { if (c.key === x.cat) catLabel = c.label; });
+    var lv = x.level === 1 ? '<span class="pair-lv lv1">放心吃</span>'
+                           : '<span class="pair-lv lv2">看做法</span>';
+    return '<div class="pair-row" data-pair="' + x.id + '">' +
+      '<img class="pair-img" src="images/final/' + x.id + '.webp" alt="' + x.name + '" ' +
+        'loading="lazy" decoding="async" ' +
+        "onerror=\"this.style.visibility='hidden'\">" +
+      '<div>' +
+        '<div class="pair-n">' + x.name + lv + '</div>' +
+        '<div class="pair-meta"><span class="pair-tag t-' + role + '">' +
+          (ROLE_LABEL[role] || '菜') + '</span>' +
+          // 只有荤菜需要点明是猪/鸡/鱼，素和汤再写分类就是重复
+          (role === 'meat' && catLabel ? catLabel + ' · ' : '') +
+          (x.ings && x.ings.length ? x.ings.join('、') : '') + '</div>' +
+      '</div></div>';
+  }
+
+  function renderPair() {
+    pairSet = makeSet();
+    var box = document.getElementById('pairBody');
+    var sub = document.getElementById('pairSub');
+
+    if (!pairSet) {
+      sub.textContent = '';
+      box.innerHTML = '<div class="pair-note">这道菜池子不够配不出来了，' +
+        '先去菜单里自己点几道吧。</div>';
+      return;
+    }
+
+    var soup = [], dish = [];
+    pairSet.forEach(function (x) {
+      (ROLE_OF[x.cat] === 'soup' ? soup : dish).push(x);
+    });
+
+    // 荤的先上、素的跟着、汤最后
+    var order = { meat: 0, egg: 1, veg: 2, soup: 3 };
+    dish.sort(function (a, b) {
+      return (order[ROLE_OF[a.cat]] || 9) - (order[ROLE_OF[b.cat]] || 9);
+    });
+
+    var n = { meat: 0, veg: 0, egg: 0 };
+    dish.forEach(function (x) { n[ROLE_OF[x.cat]] = (n[ROLE_OF[x.cat]] || 0) + 1; });
+
+    var said = [];
+    if (n.meat) said.push(n.meat + ' 道荤');
+    if (n.veg) said.push(n.veg + ' 道素');
+    if (n.egg) said.push(n.egg + ' 道蛋豆');
+    if (soup.length) said.push(soup.length + ' 道汤');
+
+    var lv2n = pairSet.filter(function (x) { return x.level === 2; }).length;
+
+    sub.textContent = dish.length + ' 菜 ' + soup.length + ' 汤';
+    var html = '<div class="pair-note">荤素搭着来：' + said.join('、') +
+      '。同一桌不会出现两道同一种食材，也不会整桌青菜。' +
+      (lv2n ? '其中 ' + lv2n + ' 道写着「看做法」，做的时候按步骤来。' :
+              '都是「放心吃」的，照常做就行。') +
+      '</div>';
+    dish.forEach(function (x) { html += pairRow(x); });
+    soup.forEach(function (x) { html += pairRow(x); });
+    box.innerHTML = html;
+  }
+
+  // ---------- 面板 ----------
+  var sheetOpen = false;
+
+  function picked() {
+    return DISHES.filter(function (x) {
+      return state.ids.indexOf(x.id) > -1;
+    });
+  }
+
+  function renderAdvice() {
+    var r = evaluate(picked());
+    document.getElementById('headline').textContent = r.headline;
+    document.getElementById('subline').textContent =
+      state.ids.length ? '已选 ' + state.ids.length + ' 道' : '';
+
+    var box = document.getElementById('advice');
+    var html = '';
+
+    r.items.forEach(function (it) {
+      var icon = it.type === 'ok' ? '✓' : (it.type === 'warn' ? '!' : '✕');
+      var cls = it.type === 'ok' ? 'aok' : (it.type === 'warn' ? 'awarn' : 'abad');
+      html += '<div class="adv ' + cls + '"><div class="adv-icon">' + icon +
+              '</div><div class="adv-text"></div></div>';
+    });
+
+    html += '<div class="tips"><span class="tips-title">每天的口径</span>';
+    DAILY_TIPS.forEach(function () {
+      html += '<div class="tips-row"><span class="tips-dot"></span><span></span></div>';
+    });
+    html += '</div>';
+
+    box.innerHTML = html;
+
+    var texts = box.querySelectorAll('.adv-text');
+    r.items.forEach(function (it, i) { texts[i].textContent = it.text; });
+
+    var rows = box.querySelectorAll('.tips-row span:last-child');
+    DAILY_TIPS.forEach(function (t, i) { rows[i].textContent = t; });
+  }
+
+  function openSheet() {
+    sheetOpen = true;
+    renderAdvice();
+    document.getElementById('mask').className = 'mask on';
+    document.getElementById('sheet').className = 'sheet on';
+  }
+
+  function closeSheet() {
+    sheetOpen = false;
+    document.getElementById('mask').className = 'mask';
+    document.getElementById('sheet').className = 'sheet';
+  }
+
+  document.getElementById('openBtn').onclick = openSheet;
+  document.getElementById('closeBtn').onclick = closeSheet;
+  document.getElementById('clearBtn').onclick = function () {
+    state.ids = [];
+    saveIds();
+    renderList();
+    renderBar();
+    closeSheet();
+  };
+
+  // ---------- 三块非菜单内容，做成分类标签，点开就在列表区显示 ----------
+  var EXTRA_HEAD = [
+    { key: 'x-fruit', label: '🍇 水果' },
+    { key: 'x-season', label: '🥬 当季菜' }
+  ];
+  // 养胃、喝什么放整条标签的后面（体重之前）：先把菜点完，再看这些
+  var EXTRA_TAIL = [
+    { key: 'x-stomach', label: '🩺 养胃' },
+    { key: 'x-tea', label: '🍵 喝什么' }
+  ];
+  var EXTRA_CATS = EXTRA_HEAD.concat(EXTRA_TAIL);
+  // 体重放整条标签的最后：它是长期目标，不是每天点菜时要看的
+  var BODY_CAT = { key: 'x-body', label: '⚖️ 体重' };
+
+  // 没有「全部」之后，默认落在第一个有菜的普通分类上。
+  // 数据里改了分类顺序、或者加了新分类，这里会自动跟着变，不用改代码。
+  function defaultCat() {
+    var order = EXTRA_HEAD.concat(CATS, EXTRA_TAIL, [BODY_CAT]);
+    for (var i = 0; i < order.length; i++) {
+      var k = order[i].key;
+      if (isExtra(k)) continue;
+      if (DISHES.some(function (x) { return x.cat === k; })) return k;
+    }
+    return order[0].key;
+  }
+
+  function isExtra(key) {
+    return key.indexOf('x-') === 0;
+  }
+
+  function sec(title, sub) {
+    return '<div class="sec"><span class="sec-t">' + title + '</span>' +
+           (sub ? '<span class="sec-s">' + sub + '</span>' : '') + '</div>';
+  }
+
+  function item(x) {
+    var fig = '';
+    if (x.id) {
+      fig = '<div class="ei-fig">' +
+            '<img src="images/final/' + x.id + '.webp" alt="' + x.name + '" ' +
+            'loading="lazy" decoding="async" ' +
+            "onerror=\"this.parentNode.style.display='none'\">" +
+            '</div>';
+    }
+    return '<div class="ei ei-' + x.tone + (x.id ? ' has-img' : '') + '">' +
+           fig +
+           '<div class="ei-bd">' +
+           '<div class="ei-n">' + x.name + '</div>' +
+           '<div class="ei-t">' + x.text + '</div></div></div>';
+  }
+
+  function extraHtml(key) {
+    var h = '';
+
+    if (key === 'x-stomach') {
+      h += '<div class="x-lead">反流加胃炎，要改的其实不是"吃什么菜"，是<b>怎么吃</b>。' +
+           '下面这几条比换菜管用得多。</div>';
+      EXT.STOMACH.lines.forEach(function (x) { h += item(x); });
+    }
+
+    if (key === 'x-tea') {
+      h += '<div class="x-lead">家里这几样花草，哪些能天天喝、哪些只是偶尔。' +
+           '<b>所有茶都不加糖、不加蜂蜜。</b></div>';
+      EXT.TEAS.forEach(function (x) { h += item(x); });
+    }
+
+    if (key === 'x-fruit') {
+      h += '<div class="x-lead">水果按<b>果糖</b>排，不按甜不甜排。' +
+           '果糖会升尿酸，所以甜不甜不是标准，一天总量 200–350 克，分两次吃。</div>';
+      h += item(EXT.FRUIT_WARN);
+      EXT.FRUIT.forEach(function (x) { h += item(x); });
+    }
+
+    if (key === 'x-season') {
+      h += '<div class="x-lead">广东 10 月底到 11 月，这几样在田里产量最大，' +
+           '又便宜又嫩。<b>买菜照着这几样挑就行。</b></div>';
+      EXT.SEASON_VEG.forEach(function (x) { h += item(x); });
+    }
+
+    if (key === 'x-body') {
+      h += '<div class="x-lead">这项最划算：体重每减 1 公斤，收缩压大约降 1 毫米汞柱。' +
+           '关键是<b>不饿肚子</b>，吃饱了才减得下去。</div>';
+      h += '<div class="body-card">' +
+           '<div class="bc-row"><span class="bc-k">现在</span><span class="bc-v">' + EXT.BODY.now + '</span></div>' +
+           '<div class="bc-row"><span class="bc-k">体型</span><span class="bc-v"><span class="hot">' + EXT.BODY.bmi + '</span></span></div>' +
+           '<div class="bc-row"><span class="bc-k">目标</span><span class="bc-v">' + EXT.BODY.target + '</span></div>' +
+           '</div>';
+      EXT.BODY.lines.forEach(function (x) { h += item(x); });
+    }
+
+    return h;
+  }
+
+  function closeAll() {
+    closeSheet();
+    document.getElementById('pairSheet').className = 'sheet';
+    document.getElementById('mask').className = 'mask';
+  }
+
+  document.getElementById('mask').onclick = closeAll;
+
+  document.getElementById('dtBack').onclick = function () { closeDetail(false); };
+  document.getElementById('dtAdd').onclick = function () { if (dtId) toggleId(dtId); };
+
+  document.getElementById('pickBtn').onclick = function () {
+    renderPair();
+    document.getElementById('mask').className = 'mask on';
+    document.getElementById('pairSheet').className = 'sheet on';
+  };
+
+  document.getElementById('pairAgain').onclick = renderPair;
+
+  document.getElementById('pairTake').onclick = function () {
+    if (!pairSet) { closeAll(); return; }
+    state.ids = pairSet.map(function (x) { return x.id; });
+    saveIds();
+    renderList();
+    renderBar();
+    // 没有「全部」页了：收下这桌就直接给结论，不用再翻列表
+    document.getElementById('pairSheet').className = 'sheet';
+    openSheet();
+  };
+
+
+  if (!state.cat) state.cat = defaultCat();
+  renderCats();
+  renderList();
+  renderBar();
+})();
+</script>
+</body>
+</html>
