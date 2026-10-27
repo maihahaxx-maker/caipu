@@ -2780,10 +2780,10 @@ window.EXTRA = module.exports;
   };
 
   // 左侧竖条从上到下的顺序，改这三个数组就能调整
-  var NAV_BODY  = ['x-stomach', 'x-tea', 'x-body'];                              // 身体那几件事
   var NAV_DISH  = ['pork', 'chicken', 'fish', 'beef', 'egg', 'veg', 'soup', 'staple'];  // 各类菜
   var NAV_EXTRA = ['x-fruit', 'x-season'];                                        // 水果、当季菜
-  var NAV_ORDER = NAV_BODY.concat(NAV_DISH, NAV_EXTRA);
+  var NAV_BODY  = ['x-stomach', 'x-tea', 'x-body'];                              // 身体那几件事，放最后
+  var NAV_ORDER = NAV_DISH.concat(NAV_EXTRA, NAV_BODY);
 
   // 数据里新加了分类、但上面三个数组都没写：自动补到最后，不会丢
   (function () {
